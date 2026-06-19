@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QBank Admin Portal — Business Requirements Document v1.0</title>
+  <style>
+    :root {
+      --primary:   #1a3c6e;
+      --accent:    #2563eb;
+      --light:     #f0f4ff;
+      --border:    #d1d9f0;
+      --text:      #1e293b;
+      --muted:     #64748b;
+      --success:   #16a34a;
+      --warning:   #d97706;
+      --danger:    #dc2626;
+      --amber-bg:  #fef3c7;
+      --green-bg:  #dcfce7;
+      --red-bg:    #fee2e2;
+      --blue-bg:   #dbeafe;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; color: var(--text); background: #f8fafc; line-height: 1.7; }
+
+    /* ── Cover ── */
+    .cover { background: linear-gradient(135deg, #1a3c6e 0%, #2563eb 100%); color: #fff; padding: 80px 60px 60px; }
+    .cover .tag { display: inline-block; background: rgba(255,255,255,0.2); border-radius: 4px; padding: 4px 12px; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 24px; }
+    .cover h1 { font-size: 40px; font-weight: 700; line-height: 1.2; margin-bottom: 8px; }
+    .cover h2 { font-size: 20px; font-weight: 400; opacity: .85; margin-bottom: 12px; }
+    .cover h3 { font-size: 15px; font-weight: 400; opacity: .7; margin-bottom: 40px; letter-spacing: 0.3px; }
+    .cover-meta { display: flex; gap: 40px; flex-wrap: wrap; }
+    .cover-meta div { font-size: 13px; opacity: .8; }
+    .cover-meta div strong { display: block; font-size: 15px; opacity: 1; color: #fff; }
+
+    /* ── Layout ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 40px 80px; }
+
+    /* ── TOC ── */
+    .toc { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 32px 36px; margin: 40px 0; }
+    .toc h3 { color: var(--primary); margin-bottom: 18px; font-size: 14px; letter-spacing: .5px; text-transform: uppercase; }
+    .toc ol { padding-left: 20px; columns: 2; column-gap: 40px; }
+    .toc li { margin-bottom: 6px; break-inside: avoid; }
+    .toc a { color: var(--accent); text-decoration: none; font-size: 13.5px; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* ── Sections ── */
+    section { margin-top: 56px; }
+    section h2 { font-size: 22px; color: var(--primary); border-bottom: 3px solid var(--accent); padding-bottom: 10px; margin-bottom: 24px; }
+    section h3 { font-size: 17px; color: var(--primary); margin: 32px 0 12px; }
+    section h4 { font-size: 14px; font-weight: 700; color: var(--text); margin: 20px 0 8px; }
+    p { margin-bottom: 14px; }
+
+    /* ── Cards ── */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin: 18px 0; }
+    .card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 22px; }
+    .card .icon { font-size: 26px; margin-bottom: 10px; }
+    .card h4 { font-size: 14px; color: var(--primary); margin-bottom: 6px; margin-top: 0; }
+    .card p { font-size: 13px; color: var(--muted); margin: 0; }
+
+    /* ── Tables ── */
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13.5px; }
+    th { background: var(--primary); color: #fff; padding: 10px 14px; text-align: left; font-size: 12px; letter-spacing: 0.3px; }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--light); }
+    tr:hover td { background: #e8eeff; }
+
+    /* ── Badges ── */
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
+    .badge-blue   { background: var(--blue-bg);  color: #1d4ed8; }
+    .badge-green  { background: var(--green-bg); color: #15803d; }
+    .badge-yellow { background: var(--amber-bg); color: #a16207; }
+    .badge-red    { background: var(--red-bg);   color: #b91c1c; }
+    .badge-gray   { background: #f1f5f9;         color: #475569; }
+    .badge-purple { background: #f3e8ff;         color: #7e22ce; }
+
+    /* ── Role blocks ── */
+    .role-block { border-left: 4px solid var(--accent); background: #fff; border-radius: 0 8px 8px 0; padding: 20px 24px; margin: 16px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); }
+    .role-block.compliance { border-left-color: var(--success); }
+    .role-block.risk       { border-left-color: var(--warning); }
+    .role-block.operations { border-left-color: var(--accent); }
+    .role-block.superadmin { border-left-color: var(--danger); }
+    .role-block h4 { margin-top: 0; font-size: 15px; }
+    .role-block ul { padding-left: 20px; font-size: 13.5px; }
+    .role-block ul li { margin-bottom: 6px; }
+
+    /* ── Info / Warning boxes ── */
+    .info-box { background: var(--light); border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px 18px; margin: 14px 0; font-size: 13.5px; }
+    .info-box strong { color: var(--primary); }
+    .warn-box { background: var(--amber-bg); border: 1px solid rgba(217,119,6,0.4); border-radius: 8px; padding: 14px 18px; margin: 14px 0; font-size: 13.5px; }
+    .warn-box strong { color: #92400e; }
+    .danger-box { background: var(--red-bg); border: 1px solid rgba(220,38,38,0.3); border-radius: 8px; padding: 14px 18px; margin: 14px 0; font-size: 13.5px; }
+    .danger-box strong { color: #b91c1c; }
+
+    /* ── Permission grid ── */
+    .perm-table th { font-size: 11px; }
+    .perm-table td { text-align: center; font-size: 13px; }
+    .perm-table td:first-child { text-align: left; font-weight: 500; }
+    .tick   { color: var(--success); font-weight: 700; font-size: 15px; }
+    .cross  { color: #cbd5e1; font-size: 13px; }
+    .partial{ color: var(--warning); font-weight: 600; }
+
+    /* ── Level pills ── */
+    .level-pill { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+    .l1 { background: #f1f5f9; color: #475569; }
+    .l2 { background: var(--blue-bg); color: #1d4ed8; }
+    .l3 { background: var(--amber-bg); color: #92400e; }
+    .l4 { background: var(--red-bg); color: #b91c1c; }
+
+    /* ── Chain diagram ── */
+    .chain { display: flex; align-items: center; gap: 0; margin: 14px 0; flex-wrap: wrap; }
+    .chain-step { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .chain-dot { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white; }
+    .chain-dot.l1c { background: #64748b; }
+    .chain-dot.l2c { background: var(--accent); }
+    .chain-dot.l3c { background: var(--warning); }
+    .chain-dot.l4c { background: var(--danger); }
+    .chain-label { font-size: 11px; color: var(--muted); text-align: center; max-width: 80px; }
+    .chain-arrow { font-size: 18px; color: var(--border); padding: 0 6px; padding-bottom: 16px; }
+
+    /* ── Screen block ── */
+    .screen-block { background: #fff; border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; overflow: hidden; }
+    .screen-header { background: var(--primary); color: #fff; padding: 12px 20px; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+    .screen-header .path { font-size: 11px; opacity: 0.7; margin-left: auto; font-family: 'Consolas', monospace; }
+    .screen-body { padding: 20px; }
+    .screen-body h5 { font-size: 13px; font-weight: 700; color: var(--primary); margin: 16px 0 8px; text-transform: uppercase; letter-spacing: 0.4px; font-size: 11px; }
+    .screen-body ul { padding-left: 20px; font-size: 13.5px; }
+    .screen-body ul li { margin-bottom: 5px; }
+    .screen-body p { font-size: 13.5px; }
+
+    /* ── Two-col ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 18px 0; }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* ── Footer ── */
+    footer { text-align: center; font-size: 12px; color: var(--muted); padding: 40px 0 20px; border-top: 1px solid var(--border); margin-top: 60px; }
+
+    /* ── Utility ── */
+    .mt-0 { margin-top: 0; }
+    .ref { font-family: 'Consolas', monospace; font-size: 12px; color: var(--accent); font-weight: 600; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════ COVER ════════════ -->
+<div class="cover">
+  <div class="tag">Business Requirements Document — Admin Portal</div>
+  <h1>QBank Admin Portal</h1>
+  <h2>Internal Operations Platform — Complete Feature &amp; Role Specification</h2>
+  <h3>Technical Build Reference for Engineering, QA &amp; Architecture Teams</h3>
+  <div class="cover-meta">
+    <div><strong>Version</strong>1.0 — Draft</div>
+    <div><strong>Date</strong>June 19, 2026</div>
+    <div><strong>Prepared By</strong>Product Office — Aaditya Sinha</div>
+    <div><strong>Approved By</strong>Asit Beesen, CEO</div>
+    <div><strong>Status</strong><span class="badge badge-yellow">In Review</span></div>
+    <div><strong>Source Reference</strong>qbank_admin_v2.html (UX Prototype)</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ════ TOC ════ -->
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#s1">Purpose &amp; Scope</a></li>
+    <li><a href="#s2">Admin Portal Architecture</a></li>
+    <li><a href="#s3">Authentication &amp; Session Management</a></li>
+    <li><a href="#s4">Role Hierarchy &amp; Level Structure</a></li>
+    <li><a href="#s5">Permissions Matrix</a></li>
+    <li><a href="#s6">Navigation Map per Role</a></li>
+    <li><a href="#s7">Escalation &amp; Multi-Level Approval System</a></li>
+    <li><a href="#s8">Compliance Role — Feature Requirements</a></li>
+    <li><a href="#s9">Risk Role — Feature Requirements</a></li>
+    <li><a href="#s10">Operations Role — Feature Requirements</a></li>
+    <li><a href="#s11">Super Admin — Feature Requirements</a></li>
+    <li><a href="#s12">Shared Modules</a></li>
+    <li><a href="#s13">UI/UX Component Standards</a></li>
+    <li><a href="#s14">Non-Functional Requirements</a></li>
+    <li><a href="#s15">Data Model References</a></li>
+    <li><a href="#s16">Glossary</a></li>
+  </ol>
+</div>
+
+<!-- ════ 1. PURPOSE ════ -->
+<section id="s1">
+  <h2>1. Purpose &amp; Scope</h2>
+
+  <p>This document defines the complete business and functional requirements for the <strong>QBank Admin Portal</strong> — the internal-facing web application used by a Client's operations staff to manage customers, transactions, compliance, risk, and system configuration.</p>
+
+  <p>This BRD is the authoritative technical reference for the engineering team building the Admin Portal. It covers every screen, role, permission level, workflow, approval chain, and data requirement derived from the approved UX prototype (<span class="ref">qbank_admin_v2.html</span>). Any deviation from this document must be approved by the Product Office before implementation.</p>
+
+  <div class="info-box">
+    <strong>Who This Document Is For:</strong> Frontend engineers, backend engineers, QA engineers, architects, and the product team. This is not a user-facing document — it is an internal technical specification.
+  </div>
+
+  <h3>1.1 What is the Admin Portal?</h3>
+  <p>The Admin Portal is the internal operations interface deployed within each QBank Client's instance. It is entirely separate from the Customer Portal. No customer ever accesses the Admin Portal. All Client staff (compliance officers, risk analysts, operations agents, system administrators) use the Admin Portal to:</p>
+  <ul style="padding-left:20px; margin-bottom:14px;">
+    <li style="margin-bottom:7px;">Review and approve/reject customer onboarding applications (KYC/KYB)</li>
+    <li style="margin-bottom:7px;">Monitor and investigate transactions, fraud alerts, and risk events</li>
+    <li style="margin-bottom:7px;">Manage failed, stuck, and pending payment transactions</li>
+    <li style="margin-bottom:7px;">Handle customer support tickets and account management</li>
+    <li style="margin-bottom:7px;">File Suspicious Activity Reports (SARs) with regulators</li>
+    <li style="margin-bottom:7px;">Manage staff user accounts and system configuration</li>
+  </ul>
+
+  <h3>1.2 Scope Boundary</h3>
+  <table>
+    <thead><tr><th>In Scope</th><th>Out of Scope</th></tr></thead>
+    <tbody>
+      <tr><td>Admin Portal frontend (web app)</td><td>Customer Portal</td></tr>
+      <tr><td>All four admin roles and all permission levels</td><td>Mobile admin app (future)</td></tr>
+      <tr><td>Escalation and multi-level approval workflows</td><td>API specs (separate technical document)</td></tr>
+      <tr><td>Authentication (login + MFA)</td><td>Core banking ledger internals</td></tr>
+      <tr><td>All dashboard views, tables, drawers, and modals</td><td>Payment rail processing internals</td></tr>
+      <tr><td>Audit log system</td><td>Customer-facing mobile app</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ 2. ARCHITECTURE ════ -->
+<section id="s2">
+  <h2>2. Admin Portal Architecture</h2>
+
+  <h3>2.1 Architecture Principles</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="icon">🔐</div>
+      <h4>Role-Driven UI</h4>
+      <p>Every screen, navigation item, button, and action is rendered based on the logged-in user's role and level. No generic admin view exists.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🏗️</div>
+      <h4>Single-Page Application</h4>
+      <p>The admin portal is a SPA. All views are rendered client-side. Navigation does not cause full page reloads. State is maintained per session.</p>
+    </div>
+    <div class="card">
+      <div class="icon">📋</div>
+      <h4>Drawer + Modal Pattern</h4>
+      <p>Detail views use a right-side slide-in drawer (not separate pages). Confirmation dialogs use centered modals. Toast notifications for feedback.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🤖</div>
+      <h4>AI-Augmented Decisions</h4>
+      <p>AI risk scoring, recommendations, and anomaly signals are embedded directly in review workflows — not separate screens.</p>
+    </div>
+    <div class="card">
+      <div class="icon">📎</div>
+      <h4>Immutable Audit Trail</h4>
+      <p>Every admin action is logged with timestamp, actor, IP address, and target. The audit log is read-only and exportable.</p>
+    </div>
+    <div class="card">
+      <div class="icon">⛓️</div>
+      <h4>Level-Gated Actions</h4>
+      <p>High-risk actions are locked behind clearance levels. Lower-level users see the action but must raise an escalation to trigger it.</p>
+    </div>
+  </div>
+
+  <h3>2.2 High-Level Component Map</h3>
+  <table>
+    <thead><tr><th>Layer</th><th>Component</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Auth Layer</strong></td><td>Login + MFA Screen</td><td>Email/password + 6-digit TOTP MFA before entering the app shell</td></tr>
+      <tr><td><strong>App Shell</strong></td><td>Sidebar + Top Bar + Content Area</td><td>Persistent layout. Sidebar and topbar are role-specific. Content area swaps views.</td></tr>
+      <tr><td><strong>Views</strong></td><td>Dashboard, Onboarding, Customers, Compliance, SAR Filing, Alerts, Txn Monitor, Fraud Cases, Risk Reports, Txn Queue, Support Queue, Reconciliation, Users, System Config, System Health, Audit Log, Escalations</td><td>Each rendered on demand per role. Some views are shared across roles with different data visibility.</td></tr>
+      <tr><td><strong>Drawers</strong></td><td>Review Drawer, Consumer 360 Drawer</td><td>Slide-in panels for reviewing onboarding applications and full customer profiles</td></tr>
+      <tr><td><strong>Modals</strong></td><td>Action Modal, Topup Modal, SAR Modal, Fraud Case Modal, Variance Modal, Escalation Modal, Voluntary Forward Modal, Multi-Level Approve Modal, Add User Modal</td><td>Confirmation and data-entry dialogs</td></tr>
+      <tr><td><strong>Toasts</strong></td><td>Toast Notification System</td><td>Bottom-right, auto-dismiss. Types: success, error, warning, info.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ 3. AUTH ════ -->
+<section id="s3">
+  <h2>3. Authentication &amp; Session Management</h2>
+
+  <h3>3.1 Login Flow</h3>
+  <div class="screen-block">
+    <div class="screen-header">Login Screen <span class="path">/login</span></div>
+    <div class="screen-body">
+      <h5>Fields</h5>
+      <ul>
+        <li>Email address (text input, pre-filled as <span class="ref">admin@qbank.com</span> in demo)</li>
+        <li>Password (masked input)</li>
+        <li>Sign In button (triggers credential validation)</li>
+        <li>Inline error message: "Invalid credentials. Please try again." (shown on failure, hidden on load)</li>
+      </ul>
+      <h5>Demo Credential Hints (Development / QA only)</h5>
+      <p>A collapsible panel at the bottom of the login card shows demo credentials for each role and level. Each credential card is clickable to auto-fill the email and password fields. This panel must be disabled/removed in production builds.</p>
+      <h5>Behaviour</h5>
+      <ul>
+        <li>On valid credentials → transition to MFA screen (login screen hidden, MFA screen visible)</li>
+        <li>On invalid credentials → show error message inline, keep login screen visible</li>
+        <li>On success → store the matched user object in application state (role, level, name, initials, IP)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="screen-block">
+    <div class="screen-header">MFA Screen <span class="path">/mfa</span></div>
+    <div class="screen-body">
+      <h5>Fields</h5>
+      <ul>
+        <li>6 individual single-character digit inputs (focus auto-advances on each entry)</li>
+        <li>Verify Code button</li>
+        <li>Inline error if fewer than 6 digits entered</li>
+      </ul>
+      <h5>Behaviour</h5>
+      <ul>
+        <li>Auto-focus moves from digit 1 through digit 6 as user types</li>
+        <li>On digit 6 entry, form auto-submits (no button click required)</li>
+        <li>In production: validate 6-digit TOTP against the user's registered authenticator app secret</li>
+        <li>On success → hide MFA screen, activate App Shell, call <span class="ref">initApp()</span></li>
+        <li>App initialization: renders sidebar, pre-renders all shared table views, starts session timer, writes login event to audit log</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>3.2 Session Management</h3>
+  <table>
+    <thead><tr><th>Parameter</th><th>Value</th><th>Behaviour</th></tr></thead>
+    <tbody>
+      <tr><td>Session Duration</td><td>15 minutes (900 seconds)</td><td>Countdown displayed in top bar at all times</td></tr>
+      <tr><td>Inactivity Reset</td><td>Any mouse move or click</td><td>Resets countdown to 15:00, clears warning state</td></tr>
+      <tr><td>Warning Threshold</td><td>5 minutes remaining (300s)</td><td>Timer turns amber. Warning bar appears at top: "Session expiring in X. Move your mouse to stay signed in."</td></tr>
+      <tr><td>Danger Threshold</td><td>1 minute remaining (60s)</td><td>Timer turns red</td></tr>
+      <tr><td>Auto-Logout</td><td>0 seconds</td><td>Calls <span class="ref">doLogout()</span>: clears app shell, shows login screen, clears all state, resets MFA fields</td></tr>
+      <tr><td>Manual Logout</td><td>"Sign out" link in sidebar footer</td><td>Same as auto-logout</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box">
+    <strong>Security Requirement:</strong> MFA is mandatory for all admin users. There is no option to bypass MFA. The session timer must not be configurable by individual users — only Super Admin can set the timeout duration at the system level (configurable in System Config: default 15 minutes).
+  </div>
+
+  <h3>3.3 Top Bar Session Display</h3>
+  <p>The top bar displays persistently: a clock icon + "Session: MM:SS" counter on the right side, a role badge (colour-coded by role), and the logged-in user's name. These elements are visible at all times while in the app shell.</p>
+</section>
+
+<!-- ════ 4. ROLE HIERARCHY ════ -->
+<section id="s4">
+  <h2>4. Role Hierarchy &amp; Level Structure</h2>
+
+  <div class="info-box">
+    <strong>Critical Design Principle:</strong> The Admin Portal has four role departments. Within each of the three operational departments (Compliance, Risk, Operations), there are three seniority levels (L1, L2, L3). The Super Admin is a separate fourth role with a fixed Level 4. A user belongs to exactly one role and exactly one level. These are set at account creation and can only be changed by a Super Admin.
+  </div>
+
+  <h3>4.1 Role &amp; Level Overview</h3>
+  <table>
+    <thead><tr><th>Role</th><th>Level</th><th>Title</th><th>Colour Code</th><th>Primary Responsibility</th></tr></thead>
+    <tbody>
+      <tr>
+        <td rowspan="3"><span class="badge badge-green">Compliance</span></td>
+        <td><span class="level-pill l1">L1</span></td>
+        <td>Junior Compliance Analyst</td>
+        <td>Green</td>
+        <td>Routine KYC review, document checking, draft SARs, flag applications, raise escalations</td>
+      </tr>
+      <tr>
+        <td><span class="level-pill l2">L2</span></td>
+        <td>Compliance Officer</td>
+        <td>Green</td>
+        <td>Approve/reject KYC (low &amp; medium risk), file SARs, action L1 escalations, escalate high-risk to L3</td>
+      </tr>
+      <tr>
+        <td><span class="level-pill l3">L3</span></td>
+        <td>Head of Compliance</td>
+        <td>Green</td>
+        <td>Final authority on high-risk KYC, FCA SAR submission, PEP clearance, KYC override, override decisions</td>
+      </tr>
+      <tr>
+        <td rowspan="3"><span class="badge badge-yellow">Risk</span></td>
+        <td><span class="level-pill l1">L1</span></td>
+        <td>Risk Analyst</td>
+        <td>Amber</td>
+        <td>Monitor alerts, acknowledge and investigate, document findings, raise escalations to L2</td>
+      </tr>
+      <tr>
+        <td><span class="level-pill l2">L2</span></td>
+        <td>Senior Risk Analyst</td>
+        <td>Amber</td>
+        <td>Close alerts, place/release transaction holds, resolve fraud cases, action L1 escalations</td>
+      </tr>
+      <tr>
+        <td><span class="level-pill l3">L3</span></td>
+        <td>Risk Manager</td>
+        <td>Amber</td>
+        <td>Final authority on AML rule overrides, external fraud escalation to FCA, threshold configuration</td>
+      </tr>
+      <tr>
+        <td rowspan="3"><span class="badge badge-blue">Operations</span></td>
+        <td><span class="level-pill l1">L1</span></td>
+        <td>Operations Agent</td>
+        <td>Blue</td>
+        <td>Retry/cancel failed transactions, log support tickets, raise escalations for account actions</td>
+      </tr>
+      <tr>
+        <td><span class="level-pill l2">L2</span></td>
+        <td>Senior Operations Agent</td>
+        <td>Blue</td>
+        <td>Freeze/unfreeze accounts, approve top-ups (small), approve account requests, action L1 escalations</td>
+      </tr>
+      <tr>
+        <td><span class="level-pill l3">L3</span></td>
+        <td>Operations Manager</td>
+        <td>Blue</td>
+        <td>Final authority on large top-ups (&gt;£5k), reconciliation overrides, bulk account freeze, multi-level approvals</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-red">Super Admin</span></td>
+        <td><span class="level-pill l4">L4</span></td>
+        <td>Super Administrator</td>
+        <td>Red</td>
+        <td>User management, role assignment, system configuration, API key management, system health monitoring</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>4.2 Level-Specific Dashboard Panel</h3>
+  <p>Each user's dashboard includes a <strong>Level Panel</strong> at the top, immediately below any pending escalation alerts. The Level Panel shows:</p>
+  <ul style="padding-left:20px; margin-bottom:14px;">
+    <li style="margin-bottom:6px;">The user's exact title (e.g., "L2 — Compliance Officer")</li>
+    <li style="margin-bottom:6px;">A one-sentence description of their primary responsibilities at this level</li>
+    <li style="margin-bottom:6px;">A live count of their queue (e.g., "4 apps + 2 escalations pending")</li>
+    <li style="margin-bottom:6px;">A primary action button taking them directly to their most important queue</li>
+  </ul>
+
+  <h3>4.3 Sidebar Footer Identity Block</h3>
+  <p>The bottom of the sidebar shows permanently:</p>
+  <ul style="padding-left:20px; margin-bottom:14px;">
+    <li style="margin-bottom:6px;">Avatar circle with the user's 2-letter initials, coloured by role</li>
+    <li style="margin-bottom:6px;">User's full name</li>
+    <li style="margin-bottom:6px;">Job title (e.g., "Compliance Officer")</li>
+    <li style="margin-bottom:6px;">Level badge (e.g., "Level 2 — Officer" in the role's colour)</li>
+    <li style="margin-bottom:6px;">"Sign out" link (red on hover)</li>
+  </ul>
+</section>
+
+<!-- ════ 5. PERMISSIONS MATRIX ════ -->
+<section id="s5">
+  <h2>5. Permissions Matrix</h2>
+
+  <div class="info-box">
+    <strong>How Permissions Work:</strong> Every action in the system runs through a <span class="ref">can(action)</span> check. Super Admin bypasses all checks. For other roles, the check looks up the action key in the role's permission map and returns true only if the user's level is in the allowed levels array. Actions not permitted display as "locked" buttons (dashed border, padlock icon) that, when clicked, open the Escalation Modal instead of performing the action.
+  </div>
+
+  <h3>5.1 Compliance Department Permissions</h3>
+  <table class="perm-table">
+    <thead>
+      <tr>
+        <th>Action</th>
+        <th>Action Key</th>
+        <th>L1 — Junior Analyst</th>
+        <th>L2 — Officer</th>
+        <th>L3 — Head</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Approve Low-Risk Application (score &lt;40)</td><td><span class="ref">approve_low_risk</span></td><td class="cross">—</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Approve Medium-Risk Application (score 40–69)</td><td><span class="ref">approve_medium_risk</span></td><td class="cross">—</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Approve High-Risk Application (score ≥70)</td><td><span class="ref">approve_high_risk</span></td><td class="cross">—</td><td class="cross">—</td><td class="tick">✓</td></tr>
+      <tr><td>Reject Application</td><td><span class="ref">reject_application</span></td><td class="cross">—</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>File SAR (save as draft or submit internally)</td><td><span class="ref">file_sar</span></td><td class="cross">—</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Submit SAR to FCA (final regulatory submission)</td><td><span class="ref">submit_sar_fca</span></td><td class="cross">—</td><td class="cross">—</td><td class="tick">✓</td></tr>
+      <tr><td>Clear PEP Hit (mark as not a match)</td><td><span class="ref">clear_pep_hit</span></td><td class="cross">—</td><td class="cross">—</td><td class="tick">✓</td></tr>
+      <tr><td>Override KYC Decision</td><td><span class="ref">override_decision</span></td><td class="cross">—</td><td class="cross">—</td><td class="tick">✓</td></tr>
+      <tr><td>Raise Escalation (to L2 or L3)</td><td><span class="ref">raise_escalation</span></td><td class="tick">✓</td><td class="tick">✓</td><td class="cross">—</td></tr>
+      <tr><td>Action / Approve Escalation Requests</td><td><span class="ref">action_escalation</span></td><td class="cross">—</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Flag Application for Review</td><td>(all levels)</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Add Officer Notes to Application</td><td>(all levels)</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>View Onboarding Queue</td><td>(all levels)</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>View Customer Profiles (read-only)</td><td>(all levels)</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Export Compliance Reports</td><td>(all levels)</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Voluntary Forward (send to higher level for review)</td><td>(L1, L2)</td><td class="tick">✓</td><td class="tick">✓</td><td class="cross">—</td></tr>
+    </tbody>
+  </table>
+
+  <h3>5.2 Risk Department Permissions</h3>
+  <table class="perm-table">
+    <thead>
+      <tr>
+        <th>Action</th>
+        <th>Action Key</th>
+        <th>L1 — Analyst</th>
+        <th>L2 — Sr. Analyst</th>
+        <th>L3 — Manager</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>View &amp; Acknowledge Alerts</td><td>(all levels)</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Investigate Alert (mark as Investigating)</td><td>(all levels)</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Place Transaction Hold</td><td><span class="ref">place_hold</span></td><td class="cross">—</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Release Transaction Hold</td><td><span class="ref">release_hold</span></td><td class="cross">—</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Close Alert (mark as resolved)</td><td><span class="ref">close_alert</span></td><td class="cross">—</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Resolve Fraud Case</td><td><span class="ref">resolve_fraud</span></td><td class="cross">—</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Escalate Fraud Case Externally (FCA)</td><td><span class="ref">escalate_fraud_ext</span></td><td class="cross">—</td><td class="cross">—</td><td class="tick">✓</td></tr>
+      <tr><td>Configure Risk Thresholds &amp; Rules Engine</td><td><span class="ref">set_thresholds</span></td><td class="cross">—</td><td class="cross">—</td><td class="tick">✓</td></tr>
+      <tr><td>View Transaction Monitor Feed</td><td>(all levels)</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>View &amp; Export Risk Reports</td><td>(all levels)</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Raise Escalation</td><td><span class="ref">raise_escalation</span></td><td class="tick">✓</td><td class="tick">✓</td><td class="cross">—</td></tr>
+      <tr><td>Action Escalation Requests</td><td><span class="ref">action_escalation</span></td><td class="cross">—</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Voluntary Forward</td><td>(L1, L2)</td><td class="tick">✓</td><td class="tick">✓</td><td class="cross">—</td></tr>
+    </tbody>
+  </table>
+
+  <h3>5.3 Operations Department Permissions</h3>
+  <table class="perm-table">
+    <thead>
+      <tr>
+        <th>Action</th>
+        <th>Action Key</th>
+        <th>L1 — Agent</th>
+        <th>L2 — Sr. Agent</th>
+        <th>L3 — Manager</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>View Transaction Queue</td><td>(all levels)</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Retry Failed Transaction</td><td>(all levels)</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Cancel Transaction</td><td>(all levels)</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>View Customer Accounts &amp; Balances</td><td>(all levels)</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Freeze Account</td><td><span class="ref">freeze_account</span></td><td class="cross">—</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Unfreeze Account</td><td><span class="ref">unfreeze_account</span></td><td class="cross">—</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Approve Account Opening Request (additional currency)</td><td><span class="ref">approve_account_req</span></td><td class="cross">—</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Process Admin Top-up (small, ≤£5,000)</td><td><span class="ref">topup_small</span></td><td class="cross">—</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Process Admin Top-up (large, &gt;£5,000)</td><td><span class="ref">topup_large</span></td><td class="cross">—</td><td class="cross">—</td><td class="tick">✓</td></tr>
+      <tr><td>Override Reconciliation Variance</td><td><span class="ref">override_recon</span></td><td class="cross">—</td><td class="cross">—</td><td class="tick">✓</td></tr>
+      <tr><td>Assign &amp; Manage Support Tickets</td><td>(all levels)</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Generate Statements on Request</td><td>(all levels)</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Raise Escalation</td><td><span class="ref">raise_escalation</span></td><td class="tick">✓</td><td class="tick">✓</td><td class="cross">—</td></tr>
+      <tr><td>Action Escalation Requests</td><td><span class="ref">action_escalation</span></td><td class="cross">—</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+      <tr><td>Voluntary Forward</td><td>(L1, L2)</td><td class="tick">✓</td><td class="tick">✓</td><td class="cross">—</td></tr>
+    </tbody>
+  </table>
+
+  <h3>5.4 Super Admin Permissions</h3>
+  <div class="role-block superadmin">
+    <h4>🔴 Super Admin (Level 4) — Unrestricted Access</h4>
+    <p style="font-size:13.5px;margin-bottom:10px;">The Super Admin bypasses all role-based permission checks. The <span class="ref">can(action)</span> function returns <strong>true</strong> unconditionally for the Super Admin role. The Super Admin can see and perform every action across all departments.</p>
+    <p style="font-size:13.5px;font-weight:600;margin-bottom:8px;">Exclusive Super Admin capabilities (not available to any other role):</p>
+    <ul>
+      <li>Create, edit, and deactivate staff user accounts</li>
+      <li>Assign and change user roles and levels</li>
+      <li>Configure system-wide settings (currencies, payment rails, onboarding requirements)</li>
+      <li>Manage API keys and third-party integration credentials</li>
+      <li>Rotate API keys for BaaS, FX, and KYC providers</li>
+      <li>Configure security settings (MFA enforcement, session timeout, IP allowlist)</li>
+      <li>View system health dashboard (service uptime, response times, incidents)</li>
+      <li>The Super Admin's own account cannot be deactivated through the UI (protected)</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ════ 6. NAVIGATION MAP ════ -->
+<section id="s6">
+  <h2>6. Navigation Map per Role</h2>
+
+  <p>The sidebar navigation is entirely dynamic — it is generated from a role-based configuration at login. A user sees only the navigation items relevant to their role. No navigation item from another role's set is ever visible.</p>
+
+  <div class="two-col">
+    <div>
+      <div class="role-block compliance">
+        <h4>🟢 Compliance — Sidebar Navigation</h4>
+        <ul>
+          <li>Dashboard</li>
+          <li>Onboarding <em>(queue of applications to review)</em></li>
+          <li>Customers <em>(all registered customers)</em></li>
+          <li>Compliance <em>(flagged txns, PEP hits, account requests)</em></li>
+          <li>SAR Filing <em>(suspicious activity reports)</em></li>
+          <li>Escalations <em>(with badge count of pending items)</em></li>
+          <li>Audit Log</li>
+        </ul>
+      </div>
+      <div class="role-block risk">
+        <h4>🟡 Risk — Sidebar Navigation</h4>
+        <ul>
+          <li>Dashboard</li>
+          <li>Alert Queue <em>(open risk alerts)</em></li>
+          <li>Txn Monitor <em>(live transaction feed)</em></li>
+          <li>Fraud Cases <em>(open and historical)</em></li>
+          <li>AML Screening <em>(renders Compliance view filtered to PEP/Sanctions)</em></li>
+          <li>Risk Reports</li>
+          <li>Escalations <em>(with badge count)</em></li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="role-block operations">
+        <h4>🔵 Operations — Sidebar Navigation</h4>
+        <ul>
+          <li>Dashboard</li>
+          <li>Txn Queue <em>(failed, stuck, pending payments)</em></li>
+          <li>Support Queue <em>(customer service tickets)</em></li>
+          <li>Accounts <em>(renders Customers view — titled "Account Management")</em></li>
+          <li>Reconciliation <em>(EOD settlement status)</em></li>
+          <li>Escalations <em>(with badge count)</em></li>
+          <li>Audit Log</li>
+        </ul>
+      </div>
+      <div class="role-block superadmin">
+        <h4>🔴 Super Admin — Sidebar Navigation</h4>
+        <ul>
+          <li>Dashboard</li>
+          <li>User Management</li>
+          <li>System Config</li>
+          <li>System Health</li>
+          <li>Audit Log</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h3>6.1 Escalations Navigation Badge</h3>
+  <p>The "Escalations" nav item shows a red numeric badge when there are pending items directed at the current user's role and level. The badge count is the sum of:</p>
+  <ul style="padding-left:20px; margin-bottom:14px;">
+    <li style="margin-bottom:6px;">Simple escalations (ESC-xxx) where <span class="ref">targetRole === currentRole</span> AND <span class="ref">targetLevel === currentUser.level</span> AND <span class="ref">status === "pending"</span></li>
+    <li style="margin-bottom:6px;">Multi-Level Requests (MLR-xxx) where the chain config role matches <span class="ref">currentRole</span> AND <span class="ref">currentStage === currentUser.level</span> AND <span class="ref">status === "in_progress"</span></li>
+  </ul>
+  <p>The badge is not shown for Super Admin (they have no escalation queue).</p>
+
+  <h3>6.2 Shared View: Customers / Accounts</h3>
+  <p>The Customers view is shared between Compliance and Operations roles, but with different labels and available actions:</p>
+  <table>
+    <thead><tr><th>Role</th><th>Nav Label</th><th>Top Bar Title</th><th>Available Actions in Consumer 360</th></tr></thead>
+    <tbody>
+      <tr><td>Compliance</td><td>Customers</td><td>Customers</td><td>View profile, add compliance notes, view transactions (read-only), no top-up tab</td></tr>
+      <tr><td>Operations</td><td>Accounts</td><td>Account Management</td><td>View profile, view accounts, view transactions, top-up (level-gated), add notes</td></tr>
+    </tbody>
+  </table>
+
+  <h3>6.3 Shared View: Compliance / AML Screening</h3>
+  <p>The Risk role sees the Compliance view through the "AML Screening" nav link. The title in the top bar changes to "AML Screening" when accessed from the Risk sidebar. The same view is rendered — the Risk team uses it primarily to view PEP/Sanctions hits (Tab 2) and flagged transactions (Tab 1).</p>
+</section>
+
+<!-- ════ 7. ESCALATION SYSTEM ════ -->
+<section id="s7">
+  <h2>7. Escalation &amp; Multi-Level Approval System</h2>
+
+  <p>QBank's admin portal has a two-track escalation system: (1) <strong>Simple Escalations</strong> for ad-hoc situations where a lower-level user needs a higher-level user to take an action they're not cleared for; and (2) <strong>Multi-Level Requests (MLR)</strong> for predefined high-stakes actions that require a mandatory sequential approval chain.</p>
+
+  <h3>7.1 Simple Escalations</h3>
+
+  <div class="info-box">
+    <strong>Trigger:</strong> A user (L1 or L2) clicks a locked action button. The Escalation Modal opens. They fill in a reason and optional notes. On submit, an ESC record is created and routed to the appropriate level within the same department.
+  </div>
+
+  <table>
+    <thead><tr><th>Field</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>ESC ID</td><td>Auto-generated reference (e.g., <span class="ref">ESC-001</span>)</td></tr>
+      <tr><td>Raised By</td><td>Name, level, and role of the user raising the escalation</td></tr>
+      <tr><td>Target Level</td><td>The level that needs to action this (L2 or L3 within the same role)</td></tr>
+      <tr><td>Target Role</td><td>Must match the raiser's role department</td></tr>
+      <tr><td>Action</td><td>The specific action key that requires escalation (e.g., <span class="ref">approve_high_risk</span>)</td></tr>
+      <tr><td>Action Label</td><td>Human-readable description (e.g., "Approve Application (High Risk)")</td></tr>
+      <tr><td>Target</td><td>The entity being acted upon (e.g., <span class="ref">APP-2844</span>)</td></tr>
+      <tr><td>Target Name</td><td>Human-readable target (e.g., "Lisa Park")</td></tr>
+      <tr><td>Reason</td><td>Mandatory text field — why this escalation is being raised</td></tr>
+      <tr><td>Notes</td><td>Optional supporting context</td></tr>
+      <tr><td>Status</td><td>pending → actioned / returned</td></tr>
+      <tr><td>Timestamp</td><td>ISO datetime of creation</td></tr>
+      <tr><td>Trail</td><td>Append-only array of {who, ts, note} — audit history of escalation events</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Simple Escalation Actions (for the approver):</h4>
+  <ul style="padding-left:20px; margin-bottom:14px;">
+    <li style="margin-bottom:6px;"><strong>Approve:</strong> The higher-level user executes the underlying action (e.g., approves the application). The ESC status is updated to actioned. The trail records the decision with notes.</li>
+    <li style="margin-bottom:6px;"><strong>Reject:</strong> The higher-level user rejects the escalated request. Trail updated with reason. The original item remains in its pre-escalation state.</li>
+    <li style="margin-bottom:6px;"><strong>Return to Requester:</strong> Opens the Return Escalation Modal. The requester is notified the escalation was returned with a reason — they can revise and re-raise.</li>
+  </ul>
+
+  <h3>7.2 Voluntary Forward</h3>
+  <p>Any L1 or L2 user (in any department) can voluntarily forward a decision to a higher level for review even when they technically have permission to act. This is for complex edge cases or when a second opinion is needed. This triggers a forward record similar to an escalation, but does not block the original item — it is advisory.</p>
+  <p>The "Forward for Review" button appears in drawers for L1 and L2 users whenever a relevant action is available. Clicking it opens the Voluntary Forward Modal with a target level selector (L2 or L3) and a reason field.</p>
+
+  <h3>7.3 Multi-Level Requests (MLR) — Mandatory Approval Chains</h3>
+
+  <div class="danger-box">
+    <strong>MLR actions cannot be performed by a single person regardless of level.</strong> They require a full sequential sign-off chain. Each stage must be approved before the next stage is notified. If any stage rejects, the entire MLR is rejected and the action is blocked.
+  </div>
+
+  <table>
+    <thead><tr><th>MLR Type</th><th>Label</th><th>Approval Chain</th><th>Department</th><th>Urgency</th></tr></thead>
+    <tbody>
+      <tr><td><span class="ref">high_value_wire</span></td><td>High-Value Wire (&gt;£50,000)</td><td>L1 → L2 → L3</td><td>Operations</td><td><span class="badge badge-red">High</span></td></tr>
+      <tr><td><span class="ref">account_closure</span></td><td>Account Closure</td><td>L2 → L3</td><td>Operations</td><td><span class="badge badge-red">High</span></td></tr>
+      <tr><td><span class="ref">kyc_override</span></td><td>KYC Decision Override</td><td>L1 → L2 → L3</td><td>Compliance</td><td><span class="badge badge-red">High</span></td></tr>
+      <tr><td><span class="ref">aml_override</span></td><td>AML Rule Override</td><td>L2 → L3</td><td>Risk</td><td><span class="badge badge-red">High</span></td></tr>
+      <tr><td><span class="ref">bulk_account_freeze</span></td><td>Bulk Account Freeze</td><td>L2 → L3</td><td>Operations</td><td><span class="badge badge-red">High</span></td></tr>
+      <tr><td><span class="ref">sar_fca_submission</span></td><td>SAR Submission to FCA</td><td>L2 → L3</td><td>Compliance</td><td><span class="badge badge-yellow">Medium</span></td></tr>
+      <tr><td><span class="ref">fraud_external_escalation</span></td><td>Fraud External Escalation (FCA)</td><td>L2 → L3</td><td>Risk</td><td><span class="badge badge-red">High</span></td></tr>
+      <tr><td><span class="ref">large_refund</span></td><td>Large Refund (&gt;£5,000)</td><td>L1 → L2</td><td>Operations</td><td><span class="badge badge-yellow">Medium</span></td></tr>
+    </tbody>
+  </table>
+
+  <h4>MLR Chain Example — High-Value Wire (L1→L2→L3):</h4>
+  <div class="chain">
+    <div class="chain-step">
+      <div class="chain-dot l1c">L1</div>
+      <div class="chain-label">Creates MLR, approves own stage</div>
+    </div>
+    <div class="chain-arrow">→</div>
+    <div class="chain-step">
+      <div class="chain-dot l2c">L2</div>
+      <div class="chain-label">Reviews, approves or rejects</div>
+    </div>
+    <div class="chain-arrow">→</div>
+    <div class="chain-step">
+      <div class="chain-dot l3c">L3</div>
+      <div class="chain-label">Final sign-off — executes action</div>
+    </div>
+  </div>
+
+  <h4>MLR Data Fields:</h4>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>MLR ID</td><td>string</td><td>Auto-generated (e.g., <span class="ref">MLR-001</span>)</td></tr>
+      <tr><td>type</td><td>enum</td><td>One of the 8 MLR types defined above</td></tr>
+      <tr><td>label</td><td>string</td><td>Human-readable title</td></tr>
+      <tr><td>description</td><td>string</td><td>Full description of what is being approved (customer, amount, reason)</td></tr>
+      <tr><td>raisedBy, raisedByLevel, raisedByRole</td><td>string, int, string</td><td>Identity of the creator</td></tr>
+      <tr><td>chain</td><td>int[]</td><td>Ordered array of levels required (e.g., [1,2,3])</td></tr>
+      <tr><td>currentStage</td><td>int</td><td>Which level needs to act next</td></tr>
+      <tr><td>approvals</td><td>object[]</td><td>Array of {level, by, ts, note} — each completed approval stage</td></tr>
+      <tr><td>rejections</td><td>object[]</td><td>Array of any rejections with reason</td></tr>
+      <tr><td>status</td><td>enum</td><td>in_progress → approved / rejected</td></tr>
+      <tr><td>target / targetName</td><td>string</td><td>The entity being acted on</td></tr>
+      <tr><td>trail</td><td>object[]</td><td>Full append-only history log</td></tr>
+    </tbody>
+  </table>
+
+  <h3>7.4 Escalations View</h3>
+  <p>Every role except Super Admin has an Escalations view. Its content and title depend on the user's level:</p>
+  <table>
+    <thead><tr><th>User Level</th><th>View Title</th><th>Content Shown</th></tr></thead>
+    <tbody>
+      <tr><td>L1</td><td>My Escalations</td><td>Escalations raised by this user (their outbound requests) + MLR chains they initiated</td></tr>
+      <tr><td>L2 or L3</td><td>Escalation Inbox</td><td>All pending escalations and MLRs targeting this user's level and role — requiring their action</td></tr>
+    </tbody>
+  </table>
+  <p>The Escalation Inbox (L2/L3) has filter tabs: All, Escalations (simple), Multi-Level Requests, each with a count badge. Cards show the escalation ID, action label, raised-by details, reason, and action buttons (Approve, Reject, Return).</p>
+</section>
+
+<!-- ════ 8. COMPLIANCE FEATURES ════ -->
+<section id="s8">
+  <h2>8. Compliance Role — Feature Requirements</h2>
+
+  <h3>8.1 Compliance Dashboard</h3>
+  <div class="screen-block">
+    <div class="screen-header">Compliance Dashboard <span class="path">view: dashboard</span></div>
+    <div class="screen-body">
+      <h5>KPI Strip (4 cards)</h5>
+      <ul>
+        <li><strong>Pending Applications</strong> — count of apps with status "pending" or "under_review" (amber)</li>
+        <li><strong>Verified Today</strong> — count of approvals in current calendar day (green)</li>
+        <li><strong>Active SARs</strong> — count of SARs not in "accepted" status (red)</li>
+        <li><strong>PEP Hits Open</strong> — count of PEP/sanctions hits still in "reviewing" state (amber)</li>
+      </ul>
+      <h5>Two-Column Panel</h5>
+      <ul>
+        <li><strong>Application Pipeline Funnel:</strong> Horizontal bar chart showing Applications Received / Under Review / Verified / Rejected as percentages</li>
+        <li><strong>SAR Status Card:</strong> List of all SARs with consumer, amount, status badge (draft/submitted/under_review)</li>
+        <li><strong>PEP / Sanctions Hits Card:</strong> List of hits with match type, confidence, and status badge</li>
+        <li><strong>Regulatory Deadlines Card:</strong> Hardcoded upcoming regulatory events with day countdown and colour coding (red = urgent)</li>
+      </ul>
+      <h5>Quick Actions Row</h5>
+      <ul>
+        <li>"Review Next Pending" — opens the first pending application in the review drawer</li>
+        <li>"File SAR" — navigates to SAR Filing view</li>
+        <li>"Export Report" — triggers report export toast</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>8.2 Onboarding Queue</h3>
+  <div class="screen-block">
+    <div class="screen-header">Onboarding Queue <span class="path">view: onboarding</span></div>
+    <div class="screen-body">
+      <h5>Table Columns</h5>
+      <p>Ref (monospace) | Applicant Name | Type (Personal/Business) | Submitted Date | Status Badge | Risk Score Chip | Action Button</p>
+      <h5>Filter Tabs</h5>
+      <p>All | Pending | Under Review | Flagged | High Risk (score ≥70). Tabs update the table in real time. Search input filters by name or ref simultaneously with active tab.</p>
+      <h5>Status Values</h5>
+      <p>pending (amber) | under_review (blue) | flagged (red) | approved (green) | rejected (gray)</p>
+      <h5>Risk Score Chip</h5>
+      <p>Green chip (score &lt;40) | Amber chip (score 40–69) | Red chip (score ≥70). Score displayed inside the chip.</p>
+      <h5>Action Button</h5>
+      <p>Approved/Rejected apps: "View" (ghost button). All others: "Review" (outline button). Both open the Review Drawer.</p>
+    </div>
+  </div>
+
+  <h3>8.3 Review Drawer</h3>
+  <div class="screen-block">
+    <div class="screen-header">Review Drawer (KYC/KYB Application) <span class="path">drawer: reviewDrawer</span></div>
+    <div class="screen-body">
+      <h5>Drawer Header</h5>
+      <p>Applicant name (title), Application ID + Status Badge (subtitle). Close button (×).</p>
+      <h5>Sections (collapsible, one open by default)</h5>
+      <ul>
+        <li><strong>AI Risk Intelligence (default open):</strong>
+          <ul>
+            <li>Half-circle SVG gauge showing risk score 0–100</li>
+            <li>Score number and level label (LOW / MEDIUM / HIGH / CRITICAL) in the corresponding colour</li>
+            <li>AI Recommendation text box (different text for each risk band)</li>
+            <li>Signal chips: PEP match status, Sanctions status, Address verification status</li>
+            <li>Footer: "Powered by QBank AI Risk Engine v1.2"</li>
+          </ul>
+        </li>
+        <li><strong>Applicant Details:</strong> Full Name, Date of Birth, Nationality, Email, Phone, Application Type, Address</li>
+        <li><strong>Compliance Checks:</strong> AML Check, PEP Screening, Sanctions, Credit Check — each with a Pass/Fail badge</li>
+        <li><strong>Face Match:</strong> Selfie thumbnail (blue) vs ID Photo thumbnail (dark), confidence percentage, Match/Fail badge</li>
+        <li><strong>Documents:</strong> List of required documents (Passport/National ID, Proof of Address, optionally Business Registration for business apps) with Submitted/Missing badge per document</li>
+        <li><strong>Officer Notes:</strong> Textarea for adding new notes + scrollable list of prior notes with reviewer name and timestamp</li>
+        <li><strong>Application History:</strong> Vertical timeline (Submitted → Documents Received → Under Review → Final Decision)</li>
+      </ul>
+      <h5>Drawer Action Bar (bottom, fixed)</h5>
+      <p>Rendered dynamically based on current user's level and the application's risk score:</p>
+      <ul>
+        <li><strong>Approve button:</strong> Green. Shown only if the user can approve at this risk level. If not, shows a locked button (dashed, lock icon) with tooltip explaining required level.</li>
+        <li><strong>Reject button:</strong> Red. Shown only if the user has <span class="ref">reject_application</span> permission. Otherwise locked.</li>
+        <li><strong>Flag button:</strong> Amber. Available to all levels.</li>
+        <li><strong>Forward for Review button:</strong> Blue (sky). Available to L1 and L2 only. Opens Voluntary Forward Modal.</li>
+      </ul>
+      <h5>Action Modal (Approve/Reject/Flag)</h5>
+      <p>On clicking Approve, Reject, or Flag: a centred modal appears with the action title, subtitle "This action will be logged in the audit trail.", an optional Officer Notes textarea, Cancel and Confirm buttons. On Confirm: the application's status is updated, the drawer action bar is refreshed, a success toast is shown, and an audit log entry is written.</p>
+    </div>
+  </div>
+
+  <h3>8.4 Consumer 360 Drawer</h3>
+  <div class="screen-block">
+    <div class="screen-header">Consumer 360 Drawer <span class="path">drawer: c360Drawer (wide, 560px)</span></div>
+    <div class="screen-body">
+      <h5>Tabs</h5>
+      <p>Profile | Accounts | Transactions | Top-up (Operations only) | Notes</p>
+      <h5>Profile Tab</h5>
+      <p>Customer ID, full name, account type (Personal/Business), KYC status badge, join date. For business customers: company name, registration number, directors.</p>
+      <h5>Accounts Tab</h5>
+      <p>One card per currency ledger (GBP/EUR/USD). Each card shows: currency badge, account credentials (sort code + account number, or IBAN, or routing + account), current balance in large type, account status.</p>
+      <h5>Transactions Tab</h5>
+      <p>Table of the last N transactions: Date | Description | Amount (green for credit, red for debit) | Type | Status. Filter by account/currency.</p>
+      <h5>Top-up Tab (Operations only, level-gated)</h5>
+      <p>Form: Amount input (with currency prefix), Currency selector (GBP/EUR/USD), Reason text field. "Preview Top-up" button → Topup Confirm Modal → "Process Top-up" executes the credit. Small top-ups (≤£5k) available to L2+. Large top-ups (&gt;£5k) available to L3 only. L1 sees a locked placeholder.</p>
+      <h5>Notes Tab</h5>
+      <p>Textarea to add compliance/ops notes. Below it: chronological list of all prior notes with author and timestamp.</p>
+    </div>
+  </div>
+
+  <h3>8.5 Compliance View</h3>
+  <div class="screen-block">
+    <div class="screen-header">Compliance Module <span class="path">view: compliance</span></div>
+    <div class="screen-body">
+      <h5>Tab 0 — Flagged Transactions</h5>
+      <ul>
+        <li>Summary chips: "X Flagged", "X Sanctions", "X PEP Watch" (coloured backgrounds)</li>
+        <li>Table: Date | Customer | Ref | Amount | Type | Flag Reason | Action</li>
+        <li>Action: "Review" button opens Compliance Modal with transaction details and "Mark Resolved" button</li>
+        <li>"File SAR" button (top-right) — navigates to SAR Filing view (L2+ only can actually file)</li>
+      </ul>
+      <h5>Tab 1 — PEP / Sanctions Hits</h5>
+      <ul>
+        <li>Table: Hit ID | Customer | Match Type (PEP/Sanctions/Adverse Media) | Detail | Confidence % | Status | Date | Action</li>
+        <li>Action: L3 can "Clear" a PEP hit (mark as not a true match). Others see locked button or read-only "View" option</li>
+        <li>Export button (top-right)</li>
+      </ul>
+      <h5>Tab 2 — Account Opening Requests</h5>
+      <ul>
+        <li>Badge count on tab label (red number of pending requests)</li>
+        <li>Table: Request ID | Customer | Current Accounts | Requesting Currency | Reason | Submitted | Status | Actions</li>
+        <li>Actions: Approve / Reject. Requires <span class="ref">approve_account_req</span> permission (L2+ in Operations). Compliance role sees this as read-only; Operations team actions it.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>8.6 SAR Filing View</h3>
+  <div class="screen-block">
+    <div class="screen-header">SAR Filing <span class="path">view: sar-filing</span></div>
+    <div class="screen-body">
+      <h5>SAR List Table</h5>
+      <p>Columns: SAR ID | Consumer | Consumer ID | Amount | Activity Type | Filed Date | Status | Actions</p>
+      <p>Status values: draft (gray) | under_review (amber) | submitted (blue) | accepted (green)</p>
+      <h5>Actions per Row</h5>
+      <ul>
+        <li>"View / Edit" — opens SAR Detail Modal with narrative textarea and Save Changes button</li>
+        <li>"Submit to FCA" — visible only to L3. Triggers multi-level request <span class="ref">sar_fca_submission</span> if not already in chain</li>
+      </ul>
+      <h5>File New SAR Button (top-right)</h5>
+      <p>Opens New SAR Modal. Available to L2 and L3 (locked for L1).</p>
+      <h5>New SAR Modal Fields</h5>
+      <ul>
+        <li>Consumer / Entity selector (dropdown of registered customers + "Unknown Sender" option)</li>
+        <li>Amount Involved (text input)</li>
+        <li>Activity Type (dropdown: Unusual wire activity / Structuring suspected / High-value — new account / Rapid transfer pattern / PEP — undisclosed funds / Sanctions connection)</li>
+        <li>Narrative (large textarea, required, with placeholder guidance)</li>
+        <li>Save as (dropdown: "Draft — save for review" / "Submit — file with FCA immediately")</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ════ 9. RISK FEATURES ════ -->
+<section id="s9">
+  <h2>9. Risk Role — Feature Requirements</h2>
+
+  <h3>9.1 Risk Dashboard</h3>
+  <div class="screen-block">
+    <div class="screen-header">Risk Dashboard <span class="path">view: dashboard (role=risk)</span></div>
+    <div class="screen-body">
+      <h5>KPI Strip</h5>
+      <ul>
+        <li><strong>Open Alerts</strong> — count with non-closed status (red)</li>
+        <li><strong>Critical Alerts</strong> — count with severity "critical" and not closed (red)</li>
+        <li><strong>Txns Monitored Today</strong> — total transaction count (blue)</li>
+        <li><strong>AML Hits</strong> — active AML screening matches (amber)</li>
+      </ul>
+      <h5>Two-Column Panel</h5>
+      <ul>
+        <li><strong>Open Alert Queue:</strong> Top 4 non-closed alerts with severity badge and type</li>
+        <li><strong>Open Fraud Cases:</strong> Non-resolved fraud cases with amount and status badge</li>
+      </ul>
+      <h5>Quick Actions</h5>
+      <p>"Alert Queue (N open)" | "Open Monitor" | "Export Risk Report"</p>
+    </div>
+  </div>
+
+  <h3>9.2 Alert Queue</h3>
+  <div class="screen-block">
+    <div class="screen-header">Alert Queue <span class="path">view: alerts</span></div>
+    <div class="screen-body">
+      <h5>Alert Data Fields</h5>
+      <p>Alert ID | Alert Type | Consumer | Detail | Severity (critical/high/medium/low) | Time | Status (open/investigating/acknowledged/closed)</p>
+      <h5>Severity Colour Mapping</h5>
+      <p>critical → red | high → red/orange | medium → amber | low → blue</p>
+      <h5>Available Actions per Alert (level-gated)</h5>
+      <table style="margin-top:10px;">
+        <thead><tr><th>Action</th><th>L1</th><th>L2</th><th>L3</th></tr></thead>
+        <tbody>
+          <tr><td>Acknowledge (move to "acknowledged")</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>Investigate (move to "investigating")</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>Close Alert</td><td>Locked → escalate</td><td>✓</td><td>✓</td></tr>
+          <tr><td>Raise Escalation</td><td>✓</td><td>✓ (to L3)</td><td>N/A</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h3>9.3 Transaction Monitor</h3>
+  <div class="screen-block">
+    <div class="screen-header">Transaction Monitor <span class="path">view: txn-monitor</span></div>
+    <div class="screen-body">
+      <h5>KPI Strip</h5>
+      <p>Transactions Today | High Risk (≥70) | On Hold | Cleared</p>
+      <h5>Live Feed (not a standard table — custom row layout)</h5>
+      <p>Each row: Time (monospace, 48px) | Consumer (flexible) | Ref (monospace, 84px) | Amount (monospace, right-aligned, 82px) | Rail (50px) | Risk Chip | Status Badge | Action Button</p>
+      <h5>Filter Tabs</h5>
+      <p>All | High Risk | Flagged. "Refresh" button (↻) triggers re-render with fresh data.</p>
+      <h5>Action Buttons (per transaction row)</h5>
+      <ul>
+        <li><strong>Clear transactions:</strong> "View" button</li>
+        <li><strong>Held transactions:</strong> "Release" button (green, L2+ required, calls <span class="ref">release_hold</span>)</li>
+        <li><strong>Flagged/Review transactions:</strong> "Hold" button (outline, L2+ required, calls <span class="ref">place_hold</span>). L1 sees locked button.</li>
+      </ul>
+      <h5>Auto-Refresh</h5>
+      <p>Subtitle states "Live feed — refreshes every 30s". Implement polling every 30 seconds in production.</p>
+    </div>
+  </div>
+
+  <h3>9.4 Fraud Cases</h3>
+  <div class="screen-block">
+    <div class="screen-header">Fraud Cases <span class="path">view: fraud-cases</span></div>
+    <div class="screen-body">
+      <h5>KPI Strip</h5>
+      <p>Open | Investigating | Escalated | Resolved</p>
+      <h5>Table Columns</h5>
+      <p>Case ID | Consumer | Amount | Type | Opened Date | Status | Assigned To | Action</p>
+      <h5>Status Values</h5>
+      <p>open (red) | investigating (amber) | escalated (red) | resolved (green)</p>
+      <h5>Action</h5>
+      <p>Resolved cases: "View" button. Active cases: "Investigate" button → opens Fraud Case Modal.</p>
+      <h5>Fraud Case Modal</h5>
+      <ul>
+        <li>Header: Case ID, consumer, amount, type, opened date, status, assigned to</li>
+        <li>Investigation Notes textarea</li>
+        <li>Actions (level-gated):
+          <ul>
+            <li><strong>Escalate</strong> (amber): L2+ → triggers <span class="ref">fraud_external_escalation</span> MLR if external; otherwise a simple escalation</li>
+            <li><strong>Resolve Case</strong> (green): L2+ only. Moves case to "resolved" status.</li>
+          </ul>
+        </li>
+      </ul>
+      <h5>"+ New Case" Button</h5>
+      <p>Top-right. Creates a new fraud case with consumer and description. Available to all levels.</p>
+    </div>
+  </div>
+
+  <h3>9.5 Risk Reports</h3>
+  <div class="screen-block">
+    <div class="screen-header">Risk Reports <span class="path">view: risk-reports</span></div>
+    <div class="screen-body">
+      <h5>KPI Strip</h5>
+      <p>SARs Filed This Month | AML Hits | Avg Risk Score | High-Risk Customers</p>
+      <h5>Available Reports (export buttons)</h5>
+      <ul>
+        <li>Monthly AML Summary</li>
+        <li>Suspicious Activity Report (SAR)</li>
+        <li>High-Risk Customer List</li>
+        <li>Transaction Velocity Report</li>
+        <li>PEP / Sanctions Screening Log</li>
+      </ul>
+      <h5>Risk Rules Engine (L3 only can edit)</h5>
+      <ul>
+        <li>Velocity threshold per 24h (editable value)</li>
+        <li>Single transaction limit (editable value)</li>
+        <li>Auto-flag score threshold (editable value)</li>
+        <li>AI anomaly detection toggle (on/off)</li>
+        <li>Auto-SAR filing toggle (on/off)</li>
+      </ul>
+      <div class="warn-box"><strong>Permission Rule:</strong> Edit buttons on Risk Rules Engine must check <span class="ref">set_thresholds</span> permission. L1 and L2 see read-only values. L3 sees "Edit" buttons.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ 10. OPERATIONS FEATURES ════ -->
+<section id="s10">
+  <h2>10. Operations Role — Feature Requirements</h2>
+
+  <h3>10.1 Operations Dashboard</h3>
+  <div class="screen-block">
+    <div class="screen-header">Operations Dashboard <span class="path">view: dashboard (role=operations)</span></div>
+    <div class="screen-body">
+      <h5>KPI Strip</h5>
+      <ul>
+        <li><strong>Failed Transactions</strong> — count with status "failed" (red)</li>
+        <li><strong>Stuck / Pending</strong> — count of non-failed items in queue (amber)</li>
+        <li><strong>Open Support Tickets</strong> — non-resolved tickets (amber)</li>
+        <li><strong>Recon Status</strong> — "Balanced" (green) or variance indicator (amber/red)</li>
+      </ul>
+      <h5>Two-Column Panel</h5>
+      <ul>
+        <li><strong>Transaction Queue Summary:</strong> Top 4 items with ref, consumer, amount, status</li>
+        <li><strong>Support Queue:</strong> Top 4 open tickets with ID, consumer, type, status</li>
+      </ul>
+      <h5>Quick Actions</h5>
+      <p>"Transaction Queue" | "Support Queue (N)" | "Reconciliation"</p>
+    </div>
+  </div>
+
+  <h3>10.2 Transaction Queue</h3>
+  <div class="screen-block">
+    <div class="screen-header">Transaction Queue <span class="path">view: txn-queue</span></div>
+    <div class="screen-body">
+      <h5>KPI Strip</h5>
+      <p>Failed | Stuck | Pending Review | Resolved Today</p>
+      <h5>Table Columns</h5>
+      <p>Ref | Consumer | Amount | Type | Status | Rail | Reason | Actions</p>
+      <h5>Status Values</h5>
+      <p>failed (red) | stuck (amber) | pending (blue)</p>
+      <h5>Action Buttons per Row</h5>
+      <ul>
+        <li><strong>Retry</strong> (green): Re-submits the transaction through the payment rail. Available to all levels.</li>
+        <li><strong>Cancel</strong> (red): Cancels the transaction and notifies the customer. Available to all levels.</li>
+        <li><strong>Escalate</strong> (ghost): Routes to the CTO/tech team. Opens an escalation form. Available to all levels.</li>
+      </ul>
+      <h5>Filter Tabs + Search</h5>
+      <p>All | Failed | Stuck | Pending. Search by ref or consumer name.</p>
+    </div>
+  </div>
+
+  <h3>10.3 Support Queue</h3>
+  <div class="screen-block">
+    <div class="screen-header">Support Queue <span class="path">view: support-queue</span></div>
+    <div class="screen-body">
+      <h5>Table Columns</h5>
+      <p>Ticket ID | Consumer | Type | Detail | Priority | Status | Created | Assigned To</p>
+      <h5>Ticket Types</h5>
+      <p>Payment Issue | Beneficiary Issue | Account Access | KYC Update | Statement Request</p>
+      <h5>Priority Colours</h5>
+      <p>high (red dot) | medium (amber dot) | low (blue dot)</p>
+      <h5>Status Values</h5>
+      <p>open (red badge) | in_progress (blue badge) | resolved (green badge)</p>
+      <h5>Actions per Ticket</h5>
+      <ul>
+        <li>Assign to self or another ops agent</li>
+        <li>Mark as in_progress / resolved</li>
+        <li>Add internal notes</li>
+        <li>Generate and send statement (for Statement Request type)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>10.4 Reconciliation</h3>
+  <div class="screen-block">
+    <div class="screen-header">Reconciliation <span class="path">view: reconciliation</span></div>
+    <div class="screen-body">
+      <h5>Recon Summary Cards (one per currency: GBP, EUR, USD)</h5>
+      <ul>
+        <li>Currency code (large, blue)</li>
+        <li>Omnibus Balance (value from banking partner)</li>
+        <li>Ledger Sum (sum of all customer ledger balances in this currency)</li>
+        <li>Status: "✓ Balanced" (green) if values match exactly. "Variance: £X — Investigate" (amber, clickable) if they differ.</li>
+      </ul>
+      <h5>Settlement Log Table</h5>
+      <p>Columns: Time | Rail | Currency | Inbound | Outbound | Net | Status</p>
+      <p>Inbound amounts: green monospace. Outbound amounts: red monospace. Net: bold monospace. Status: "Settled" (green) or "Variance" (amber).</p>
+      <h5>Variance Investigation Modal</h5>
+      <p>Opens when user clicks a variance indicator. Shows: Omnibus Balance, Ledger Sum, Variance amount, Rail, Date. Investigation Notes textarea. "Mark Resolved" button — requires <span class="ref">override_recon</span> permission (L3 only). L2 and below see locked button.</p>
+      <h5>Export</h5>
+      <p>"Export CSV" button (top-right) — exports the settlement log.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════ 11. SUPER ADMIN FEATURES ════ -->
+<section id="s11">
+  <h2>11. Super Admin — Feature Requirements</h2>
+
+  <h3>11.1 Super Admin Dashboard</h3>
+  <div class="screen-block">
+    <div class="screen-header">Super Admin Dashboard <span class="path">view: dashboard (role=superadmin)</span></div>
+    <div class="screen-body">
+      <h5>KPI Strip</h5>
+      <ul>
+        <li><strong>Total Staff Users</strong> — count of all staff accounts (blue)</li>
+        <li><strong>Active Users</strong> — count with status "active" (green)</li>
+        <li><strong>System Uptime</strong> — live percentage from health API (green)</li>
+        <li><strong>Config Alerts</strong> — count of pending configuration warnings (amber)</li>
+      </ul>
+      <h5>Two-Column Panel</h5>
+      <ul>
+        <li><strong>Active Sessions:</strong> Table of currently logged-in staff with Name, Role pill, IP address</li>
+        <li><strong>Recent System Activity:</strong> Activity feed of system-level changes (user created, rail enabled, API key rotation due)</li>
+      </ul>
+      <h5>Quick Actions</h5>
+      <p>"Manage Users" | "System Health" | "Full Audit Log"</p>
+      <div class="info-box"><strong>Note:</strong> The Super Admin dashboard has no Escalation Badge Panel and no Level Panel — these are only for the three operational roles. The Super Admin's dashboard is purely operational/administrative.</div>
+    </div>
+  </div>
+
+  <h3>11.2 User Management</h3>
+  <div class="screen-block">
+    <div class="screen-header">User Management <span class="path">view: users</span></div>
+    <div class="screen-body">
+      <h5>KPI Strip</h5>
+      <p>Total Staff | Compliance Count | Risk Count | Operations Count</p>
+      <h5>Table Columns</h5>
+      <p>Staff ID | Name | Email | Role (pill badge) | Status (Active/Inactive badge) | Last Login (monospace datetime) | Actions</p>
+      <h5>Actions per Row</h5>
+      <ul>
+        <li><strong>Edit:</strong> Opens an Edit User modal/form to change name, email, role, or level. (Note: the prototype shows "Edit user coming soon" — this must be implemented.)</li>
+        <li><strong>Deactivate:</strong> Red button shown for active non-superadmin users. Marks status as "inactive", immediately invalidates their session.</li>
+        <li><strong>Reactivate:</strong> Green button shown for inactive users. Restores access.</li>
+        <li><strong>Super Admin account:</strong> Shows "Protected" label — cannot be deactivated through the UI.</li>
+      </ul>
+      <h5>Add User (top-right button)</h5>
+      <p>Opens Add Staff User modal:</p>
+      <ul>
+        <li>First Name + Last Name (two columns)</li>
+        <li>Email Address</li>
+        <li>Role selector (Compliance Officer / Risk Analyst / Operations Agent — Super Admin cannot be created via this form)</li>
+        <li>On create: sends login credentials via email to the new user, adds to staff list, shows success toast</li>
+      </ul>
+      <h5>Filter Tabs + Search</h5>
+      <p>All | Compliance | Risk | Operations. Search by name or email.</p>
+    </div>
+  </div>
+
+  <h3>11.3 System Configuration</h3>
+  <div class="screen-block">
+    <div class="screen-header">System Configuration <span class="path">view: system-config</span></div>
+    <div class="screen-body">
+      <h5>Panel 1 — Currencies &amp; Payment Rails (toggle switches)</h5>
+      <ul>
+        <li>GBP — Faster Payments</li>
+        <li>GBP — CHAPS</li>
+        <li>EUR — SEPA Instant</li>
+        <li>EUR — SEPA SCT</li>
+        <li>USD — ACH</li>
+        <li>USD — FedNow</li>
+        <li>SWIFT (Cross-border)</li>
+      </ul>
+      <h5>Panel 2 — Onboarding Requirements (toggle switches)</h5>
+      <ul>
+        <li>KYC required for retail</li>
+        <li>KYB required for business</li>
+        <li>Liveness check (selfie)</li>
+        <li>PEP screening</li>
+        <li>Sanctions check</li>
+      </ul>
+      <h5>Panel 3 — API Keys &amp; Integrations</h5>
+      <ul>
+        <li>Currencycloud (BaaS) — Connected badge / "Rotate Key" button</li>
+        <li>OpenPayd (FX) — Connected badge / "Rotate Key" button</li>
+        <li>Visa Card Issuer — Pending badge (no key yet)</li>
+        <li>Jumio (KYC provider) — Connected badge</li>
+        <li>Webhook endpoint — "Configure" button</li>
+      </ul>
+      <h5>Panel 4 — Security Settings</h5>
+      <ul>
+        <li>MFA required for all admins (toggle — cannot be disabled in production)</li>
+        <li>Session timeout — editable value (default: 15 min)</li>
+        <li>IP allowlist (toggle + IP address entry)</li>
+        <li>Audit log retention — display only (7 years, regulatory requirement)</li>
+      </ul>
+      <h5>Save All Changes Button</h5>
+      <p>Bottom-right. Saves all config changes in a single API call. Shows success toast on completion.</p>
+      <h5>Export Config Button</h5>
+      <p>Top-right. Exports current config as JSON.</p>
+    </div>
+  </div>
+
+  <h3>11.4 System Health</h3>
+  <div class="screen-block">
+    <div class="screen-header">System Health <span class="path">view: system-health</span></div>
+    <div class="screen-body">
+      <h5>Service Status Grid (3 columns)</h5>
+      <p>One card per service: icon, service name, current metric (uptime %, latency, connection status), status label (● Operational / Degraded / Pending setup).</p>
+      <p>Services monitored: Core Banking API | Payment Processing | Auth Service | Database Cluster | Webhook Delivery | AI Risk Engine | FX Provider (OpenPayd) | BaaS (Currencycloud) | Card Issuer (Visa)</p>
+      <h5>Two-Column Panel</h5>
+      <ul>
+        <li><strong>Response Times (p95):</strong> Horizontal bar chart per service (Core API, Auth, FX Quote, Webhooks) with value label</li>
+        <li><strong>Recent Incidents:</strong> Activity feed of past incidents with severity dots and relative timestamps</li>
+      </ul>
+      <h5>Refresh Button</h5>
+      <p>Top-right "Refresh" button re-renders the view with fresh data.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════ 12. SHARED MODULES ════ -->
+<section id="s12">
+  <h2>12. Shared Modules</h2>
+
+  <h3>12.1 Audit Log</h3>
+  <div class="screen-block">
+    <div class="screen-header">Audit Log <span class="path">view: audit (Compliance, Operations, Super Admin)</span></div>
+    <div class="screen-body">
+      <h5>Access</h5>
+      <p>Compliance, Operations, and Super Admin roles have Audit Log in their navigation. Risk role does not.</p>
+      <h5>Filter Controls (top-right)</h5>
+      <p>Dropdown: All Actions | Approval | Rejection | Login | Top-up | Flag | Export | SAR Filed | Escalation | Resolution</p>
+      <p>Export CSV button</p>
+      <h5>Table Columns</h5>
+      <p>Timestamp | Admin (name) | Action | Target (entity ref + name) | IP Address (monospace) | Details (notes)</p>
+      <h5>Data Rules</h5>
+      <ul>
+        <li>Every admin action in the system writes to the audit log immediately</li>
+        <li>The audit log is append-only — no record can be edited or deleted</li>
+        <li>Login and logout events are always logged</li>
+        <li>The IP address of the actor is always captured</li>
+        <li>Retention: 7 years (regulatory requirement)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>12.2 Customers / Accounts View</h3>
+  <div class="screen-block">
+    <div class="screen-header">Customers <span class="path">view: consumers (Compliance + Operations)</span></div>
+    <div class="screen-body">
+      <h5>Table Columns</h5>
+      <p>Customer ID | Name | Type (Personal/Business) | Account(s) (currency pills) | Balance (primary currency) | KYC Status | Joined | Action</p>
+      <h5>Filter Tabs + Search</h5>
+      <p>All | Personal | Business | Flagged. Search by name.</p>
+      <h5>KYC Status Values</h5>
+      <p>Verified (green) | Pending (amber) | Flagged (red) | Rejected (gray)</p>
+      <h5>Action</h5>
+      <p>"View" button → opens Consumer 360 Drawer. Tabs available in the drawer depend on the viewer's role (Top-up tab only for Operations).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════ 13. UI/UX STANDARDS ════ -->
+<section id="s13">
+  <h2>13. UI/UX Component Standards</h2>
+
+  <h3>13.1 Design Token Reference</h3>
+  <table>
+    <thead><tr><th>Token</th><th>Hex Value</th><th>Usage</th></tr></thead>
+    <tbody>
+      <tr><td><span class="ref">--primary</span></td><td>#1a3c6e</td><td>Sidebar, headings, table headers, borders</td></tr>
+      <tr><td><span class="ref">--accent</span></td><td>#2563eb</td><td>CTA buttons, active nav items, links</td></tr>
+      <tr><td><span class="ref">--light</span></td><td>#f0f4ff</td><td>Table row alternates, info box backgrounds</td></tr>
+      <tr><td><span class="ref">--border</span></td><td>#d1d9f0</td><td>All borders, dividers</td></tr>
+      <tr><td><span class="ref">--success</span></td><td>#16a34a</td><td>Approve, verified, balanced, connected states</td></tr>
+      <tr><td><span class="ref">--warning</span></td><td>#d97706</td><td>Pending, stuck, medium-risk, amber alerts</td></tr>
+      <tr><td><span class="ref">--danger</span></td><td>#dc2626</td><td>Failed, rejected, critical, high-risk states</td></tr>
+      <tr><td><span class="ref">--content-bg</span></td><td>#f8fafc</td><td>Page background</td></tr>
+      <tr><td><span class="ref">--card-bg</span></td><td>#FFFFFF</td><td>Card, drawer, and modal backgrounds</td></tr>
+      <tr><td><span class="ref">--text</span></td><td>#1e293b</td><td>Primary body text</td></tr>
+      <tr><td><span class="ref">--muted</span></td><td>#64748b</td><td>Secondary text, labels, timestamps</td></tr>
+    </tbody>
+  </table>
+
+  <h3>13.2 Role Colour Coding</h3>
+  <p>Every role has a consistent colour used across all role-identifying elements (badge, nav label, sidebar badge, topbar badge, avatar):</p>
+  <table>
+    <thead><tr><th>Role</th><th>Background</th><th>Text Colour</th><th>Usage</th></tr></thead>
+    <tbody>
+      <tr><td>Compliance</td><td>#dcfce7</td><td>#15803d</td><td>Green scheme — all Compliance role indicators</td></tr>
+      <tr><td>Risk</td><td>#fef3c7</td><td>#92400e</td><td>Amber scheme — all Risk role indicators</td></tr>
+      <tr><td>Operations</td><td>#dbeafe</td><td>#1d4ed8</td><td>Blue scheme — all Operations role indicators</td></tr>
+      <tr><td>Super Admin</td><td>#fee2e2</td><td>#b91c1c</td><td>Red scheme — all Super Admin indicators</td></tr>
+    </tbody>
+  </table>
+
+  <h3>13.3 Button Types</h3>
+  <table>
+    <thead><tr><th>Class</th><th>Appearance</th><th>When Used</th></tr></thead>
+    <tbody>
+      <tr><td><span class="ref">btn-primary</span></td><td>Navy fill, white text</td><td>Primary CTA — Dashboard quick actions, main action</td></tr>
+      <tr><td><span class="ref">btn-success</span></td><td>Green fill, white text</td><td>Approve, Release, Resolve, Reactivate</td></tr>
+      <tr><td><span class="ref">btn-danger</span></td><td>Red fill, white text</td><td>Reject, Cancel, Deactivate, Flag</td></tr>
+      <tr><td><span class="ref">btn-amber</span></td><td>Amber fill, white text</td><td>Flag, Escalate, Return</td></tr>
+      <tr><td><span class="ref">btn-outline</span></td><td>White fill, navy border</td><td>Secondary action — Review, Open Queue</td></tr>
+      <tr><td><span class="ref">btn-ghost</span></td><td>White fill, gray border</td><td>Tertiary — Export, Refresh, Close</td></tr>
+      <tr><td><span class="ref">permission-locked</span></td><td>Dashed border, gray text</td><td>Action button for a permission the user does not have</td></tr>
+      <tr><td><span class="ref">forward-btn</span></td><td>Light blue fill, sky border</td><td>Voluntary Forward for Review</td></tr>
+    </tbody>
+  </table>
+
+  <h3>13.4 Drawers</h3>
+  <ul style="padding-left:20px; margin-bottom:14px;">
+    <li style="margin-bottom:6px;">Drawers slide in from the right. Standard width: 520px. Wide variant (Consumer 360): 560px.</li>
+    <li style="margin-bottom:6px;">A darkened semi-transparent overlay covers the main content behind the drawer. Clicking the overlay closes the drawer.</li>
+    <li style="margin-bottom:6px;">Drawers have a fixed header (title + subtitle + close button), a scrollable body, and a fixed action bar at the bottom.</li>
+    <li style="margin-bottom:6px;">Transition: cubic-bezier easing, 300ms, sliding from off-screen right to right:0.</li>
+  </ul>
+
+  <h3>13.5 Toast Notifications</h3>
+  <ul style="padding-left:20px; margin-bottom:14px;">
+    <li style="margin-bottom:6px;">Position: fixed, bottom-right, above all content.</li>
+    <li style="margin-bottom:6px;">Types: success (green left border) | error (red) | warning (amber) | info (navy)</li>
+    <li style="margin-bottom:6px;">Auto-dismiss after ~3 seconds with fade-out animation.</li>
+    <li style="margin-bottom:6px;">Stack vertically if multiple toasts appear simultaneously.</li>
+  </ul>
+
+  <h3>13.6 Tables</h3>
+  <ul style="padding-left:20px; margin-bottom:14px;">
+    <li style="margin-bottom:6px;">Header row: navy background (#1a3c6e), white text, 11–12px uppercase with letter-spacing.</li>
+    <li style="margin-bottom:6px;">Alternating row background: even rows use <span class="ref">--light</span> (#f0f4ff).</li>
+    <li style="margin-bottom:6px;">Row hover: #e8eeff.</li>
+    <li style="margin-bottom:6px;">Reference codes (IDs, refs, IPs): Consolas monospace, accent blue, bold.</li>
+  </ul>
+
+  <h3>13.7 Collapsible Drawer Sections</h3>
+  <p>All sections within the Review Drawer use the collapsible pattern: a header row with title and a chevron (▼/▲). The first section (AI Risk Intelligence) defaults to open. All others default to closed. Click the header to toggle. The body animates show/hide with display:block/none (no CSS transition — instant show/hide).</p>
+</section>
+
+<!-- ════ 14. NON-FUNCTIONAL REQUIREMENTS ════ -->
+<section id="s14">
+  <h2>14. Non-Functional Requirements</h2>
+
+  <table>
+    <thead><tr><th>Category</th><th>Requirement</th><th>Priority</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Security — Authentication</strong></td>
+        <td>MFA mandatory for all admin users. No admin account may be accessed with password alone. TOTP (RFC 6238) implementation required.</td>
+        <td><span class="badge badge-red">Must Have</span></td>
+      </tr>
+      <tr>
+        <td><strong>Security — Session</strong></td>
+        <td>15-minute inactivity timeout, resettable by any user interaction. Session token must be invalidated server-side on logout or timeout.</td>
+        <td><span class="badge badge-red">Must Have</span></td>
+      </tr>
+      <tr>
+        <td><strong>Security — RBAC Enforcement</strong></td>
+        <td>All permission checks must be enforced server-side. The client-side <span class="ref">can()</span> function is for UI rendering only — never trust client-side permission decisions for data mutations.</td>
+        <td><span class="badge badge-red">Must Have</span></td>
+      </tr>
+      <tr>
+        <td><strong>Security — Encryption</strong></td>
+        <td>TLS 1.3+ for all admin portal traffic. All sensitive fields (passwords, API keys) encrypted at rest.</td>
+        <td><span class="badge badge-red">Must Have</span></td>
+      </tr>
+      <tr>
+        <td><strong>Audit &amp; Compliance</strong></td>
+        <td>Every data mutation triggered by an admin user must write an immutable audit log entry. Log must include: actor ID, role, level, IP, action key, target entity, timestamp, notes. Log retention: 7 years.</td>
+        <td><span class="badge badge-red">Must Have</span></td>
+      </tr>
+      <tr>
+        <td><strong>Performance — Page Load</strong></td>
+        <td>Initial app shell load: &lt;2 seconds on a standard broadband connection. Per-view render after login: &lt;500ms.</td>
+        <td><span class="badge badge-yellow">Should Have</span></td>
+      </tr>
+      <tr>
+        <td><strong>Performance — API Calls</strong></td>
+        <td>Admin API responses: p95 &lt;300ms. Transaction monitor feed: p95 &lt;500ms (data volume is higher).</td>
+        <td><span class="badge badge-yellow">Should Have</span></td>
+      </tr>
+      <tr>
+        <td><strong>Availability</strong></td>
+        <td>99.9% uptime during business hours. Planned maintenance windows communicated 48h in advance via Super Admin dashboard notifications.</td>
+        <td><span class="badge badge-red">Must Have</span></td>
+      </tr>
+      <tr>
+        <td><strong>Browser Support</strong></td>
+        <td>Chrome, Edge, Firefox, Safari — latest 2 major versions. Minimum viewport: 1280px width. Not required to be mobile-responsive in v1.</td>
+        <td><span class="badge badge-red">Must Have</span></td>
+      </tr>
+      <tr>
+        <td><strong>Accessibility</strong></td>
+        <td>WCAG 2.1 AA compliance. All interactive elements keyboard-accessible. Sufficient colour contrast ratios. Screen reader support for key workflows.</td>
+        <td><span class="badge badge-yellow">Should Have</span></td>
+      </tr>
+      <tr>
+        <td><strong>Scalability</strong></td>
+        <td>Admin portal must handle up to 50 concurrent admin sessions without degradation. Tables must support pagination for datasets exceeding 1,000 rows.</td>
+        <td><span class="badge badge-yellow">Should Have</span></td>
+      </tr>
+      <tr>
+        <td><strong>Data Isolation</strong></td>
+        <td>In a multi-tenant deployment, each Client's admin portal is a fully isolated instance. No data bleeds between Client instances at any layer.</td>
+        <td><span class="badge badge-red">Must Have</span></td>
+      </tr>
+      <tr>
+        <td><strong>API-First</strong></td>
+        <td>All admin portal functionality is backed by a versioned REST API. The frontend consumes only the API — no direct database access from the frontend. The same API is available for programmatic access by the Client's internal systems.</td>
+        <td><span class="badge badge-red">Must Have</span></td>
+      </tr>
+      <tr>
+        <td><strong>AI Integration</strong></td>
+        <td>Risk scores, recommendations, signal chips, and anomaly alerts are served by the QBank AI Risk Engine. The UI must gracefully degrade if the AI service is unavailable (show "AI score unavailable" rather than blocking the review workflow).</td>
+        <td><span class="badge badge-red">Must Have</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ 15. DATA MODEL REFERENCES ════ -->
+<section id="s15">
+  <h2>15. Data Model References</h2>
+  <p>The following entities are the core data objects the Admin Portal reads and writes. Full schema definitions belong in the API specification document. These are provided here as a reference for the frontend team to understand the data shape.</p>
+
+  <h3>15.1 User (Admin Staff)</h3>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>email</td><td>string</td><td>Unique login identifier</td></tr>
+      <tr><td>password</td><td>string (hashed)</td><td>Bcrypt-hashed credential</td></tr>
+      <tr><td>role</td><td>enum</td><td>compliance | risk | operations | superadmin</td></tr>
+      <tr><td>level</td><td>int</td><td>1, 2, 3 (or 4 for superadmin)</td></tr>
+      <tr><td>name</td><td>string</td><td>Full display name</td></tr>
+      <tr><td>initials</td><td>string</td><td>2-character avatar label</td></tr>
+      <tr><td>title</td><td>string</td><td>Job title (e.g., "Compliance Officer")</td></tr>
+      <tr><td>status</td><td>enum</td><td>active | inactive</td></tr>
+      <tr><td>lastLogin</td><td>datetime</td><td>Timestamp of most recent successful login</td></tr>
+      <tr><td>ip</td><td>string</td><td>Last known login IP — used in audit log</td></tr>
+    </tbody>
+  </table>
+
+  <h3>15.2 Onboarding Application</h3>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>id</td><td>string</td><td>e.g., APP-2841</td></tr>
+      <tr><td>name</td><td>string</td><td>Applicant full name</td></tr>
+      <tr><td>type</td><td>enum</td><td>Personal | Business</td></tr>
+      <tr><td>submitted</td><td>date string</td><td>Application submission date</td></tr>
+      <tr><td>status</td><td>enum</td><td>pending | under_review | flagged | approved | rejected</td></tr>
+      <tr><td>risk</td><td>int (0–100)</td><td>AI-generated risk score</td></tr>
+      <tr><td>email, dob, nationality, phone, address</td><td>strings</td><td>Applicant personal details</td></tr>
+    </tbody>
+  </table>
+
+  <h3>15.3 Customer (Registered)</h3>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>id</td><td>string</td><td>e.g., QBNK-001</td></tr>
+      <tr><td>name</td><td>string</td><td>Customer full name</td></tr>
+      <tr><td>type</td><td>enum</td><td>Personal | Business</td></tr>
+      <tr><td>accounts</td><td>string[]</td><td>Array of active currency codes (e.g., ["GBP","EUR"])</td></tr>
+      <tr><td>balance</td><td>string</td><td>Formatted balance in primary currency</td></tr>
+      <tr><td>kyc</td><td>enum</td><td>Verified | Pending | Flagged | Rejected</td></tr>
+      <tr><td>joined</td><td>date string</td><td>Account creation date</td></tr>
+    </tbody>
+  </table>
+
+  <h3>15.4 Audit Log Entry</h3>
+  <table>
+    <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>ts</td><td>datetime string</td><td>Timestamp of the event</td></tr>
+      <tr><td>admin</td><td>string</td><td>Name of the acting admin (or "Admin System" for automated events)</td></tr>
+      <tr><td>action</td><td>enum</td><td>approval | rejection | login | topup | flag | export | sar | escalation | resolution</td></tr>
+      <tr><td>target</td><td>string</td><td>Entity reference + name (e.g., "APP-2841 Marcus Johnson")</td></tr>
+      <tr><td>ip</td><td>string</td><td>Actor's IP address</td></tr>
+      <tr><td>detail</td><td>string</td><td>Human-readable description of the action and any notes</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ════ 16. GLOSSARY ════ -->
+<section id="s16">
+  <h2>16. Glossary</h2>
+  <table>
+    <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Admin Portal</strong></td><td>The internal-facing web application used by a Client's staff to manage QBank operations</td></tr>
+      <tr><td><strong>Client</strong></td><td>The financial institution that has licensed and deployed QBank software</td></tr>
+      <tr><td><strong>Customer</strong></td><td>An end user of the Client's banking service — never accesses the Admin Portal</td></tr>
+      <tr><td><strong>RBAC</strong></td><td>Role-Based Access Control — the permission model governing what each admin user can see and do</td></tr>
+      <tr><td><strong>Level</strong></td><td>Seniority within a role department (L1 = junior, L2 = mid, L3 = senior/head)</td></tr>
+      <tr><td><strong>Escalation (Simple)</strong></td><td>An ad-hoc request raised by a lower-level user asking a higher-level user to perform an action beyond the raiser's clearance</td></tr>
+      <tr><td><strong>MLR</strong></td><td>Multi-Level Request — a mandatory sequential approval chain for predefined high-stakes actions</td></tr>
+      <tr><td><strong>Voluntary Forward</strong></td><td>Proactively forwarding a decision to a higher level for second opinion, even when the current user has permission to act</td></tr>
+      <tr><td><strong>Consumer 360</strong></td><td>The wide slide-in drawer showing a customer's full profile, accounts, transaction history, and notes</td></tr>
+      <tr><td><strong>KYC</strong></td><td>Know Your Customer — identity verification process for retail customers</td></tr>
+      <tr><td><strong>KYB</strong></td><td>Know Your Business — verification process for business customers</td></tr>
+      <tr><td><strong>SAR</strong></td><td>Suspicious Activity Report — regulatory filing submitted to the FCA (UK) or relevant authority</td></tr>
+      <tr><td><strong>PEP</strong></td><td>Politically Exposed Person — individual with a prominent public role, requiring enhanced due diligence</td></tr>
+      <tr><td><strong>AML</strong></td><td>Anti-Money Laundering — regulatory framework and screening processes to detect financial crime</td></tr>
+      <tr><td><strong>Reconciliation</strong></td><td>The process of verifying that the sum of all customer currency ledgers matches the actual omnibus bank account balance held by the banking partner</td></tr>
+      <tr><td><strong>Omnibus Account</strong></td><td>A pooled bank account held by QBank's banking infrastructure partner, containing all customer funds in a given currency</td></tr>
+      <tr><td><strong>FCA</strong></td><td>Financial Conduct Authority — UK financial regulator. SAR submissions go to the FCA.</td></tr>
+      <tr><td><strong>TOTP</strong></td><td>Time-based One-Time Password — the algorithm used for MFA (RFC 6238, compatible with Google Authenticator, Authy, etc.)</td></tr>
+      <tr><td><strong>SPA</strong></td><td>Single-Page Application — the Admin Portal architecture where navigation does not trigger full page reloads</td></tr>
+      <tr><td><strong>Top-up</strong></td><td>An admin-initiated credit to a customer's ledger, used for corrections, refunds, or adjustments. Requires L2+ clearance.</td></tr>
+      <tr><td><strong>Velocity Breach</strong></td><td>A risk alert triggered when a customer's transaction volume or frequency exceeds configured thresholds within a time window</td></tr>
+      <tr><td><strong>Risk Score</strong></td><td>A 0–100 integer produced by the AI Risk Engine indicating the likelihood of fraud or compliance risk for an applicant or transaction. &lt;40 = Low, 40–69 = Medium, 70–84 = High, 85+ = Critical.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<footer>
+  <p>QBank Admin Portal — Business Requirements Document v1.0 — Confidential &amp; Proprietary</p>
+  <p>© 2026 QBank. All rights reserved. | Prepared by the QBank Product Office — Aaditya Sinha</p>
+  <p style="margin-top:6px;">This document is the authoritative reference for the Admin Portal build. Deviations require Product Office sign-off.</p>
+</footer>
+
+</div>
+</body>
+</html>
