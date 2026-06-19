@@ -355,11 +355,13 @@ tbody tr:hover td { background: #e8eeff; }
   display: inline-flex; align-items: center; gap: 4px;
   padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600;
 }
-.badge-amber { background: var(--amber-bg); color: #92400e; }
-.badge-blue  { background: #dbeafe; color: #1d4ed8; }
-.badge-green { background: var(--green-bg); color: #15803d; }
-.badge-red   { background: var(--red-bg); color: #b91c1c; }
-.badge-gray  { background: #f1f5f9; color: #475569; }
+.badge-amber  { background: var(--amber-bg); color: #92400e; }
+.badge-blue   { background: #dbeafe; color: #1d4ed8; }
+.badge-green  { background: var(--green-bg); color: #15803d; }
+.badge-red    { background: var(--red-bg); color: #b91c1c; }
+.badge-gray   { background: #f1f5f9; color: #475569; }
+.badge-orange { background: #ffedd5; color: #9a3412; }
+.badge-purple { background: #ede9fe; color: #6d28d9; }
 
 /* RISK CHIP */
 .risk-chip {
@@ -1055,8 +1057,9 @@ select.form-input { appearance: none; background-image: url("data:image/svg+xml,
               <button class="filter-tab active" onclick="setOnboardingTab(this,'all')">All</button>
               <button class="filter-tab" onclick="setOnboardingTab(this,'pending')">Pending</button>
               <button class="filter-tab" onclick="setOnboardingTab(this,'under_review')">Under Review</button>
-              <button class="filter-tab" onclick="setOnboardingTab(this,'flagged')">Flagged</button>
-              <button class="filter-tab" onclick="setOnboardingTab(this,'high_risk')">High Risk</button>
+              <button class="filter-tab" onclick="setOnboardingTab(this,'action_required')">Action Required</button>
+              <button class="filter-tab" onclick="setOnboardingTab(this,'resubmitted')">Resubmitted</button>
+              <button class="filter-tab" onclick="setOnboardingTab(this,'decided')">Decided</button>
             </div>
           </div>
           <table id="onboardingTable">
@@ -1226,6 +1229,9 @@ select.form-input { appearance: none; background-image: url("data:image/svg+xml,
       <!-- ======== OPS: SUPPORT QUEUE ======== -->
       <div class="view" id="view-support-queue"></div>
 
+      <!-- ======== OPS: TOP-UP STATION ======== -->
+      <div class="view" id="view-topup-station"></div>
+
       <!-- ======== ESCALATIONS ======== -->
       <div class="view" id="view-escalations"></div>
 
@@ -1329,6 +1335,21 @@ select.form-input { appearance: none; background-image: url("data:image/svg+xml,
     <div class="modal-actions">
       <button class="btn btn-ghost btn-sm" onclick="closeActionModal()">Cancel</button>
       <button class="btn btn-primary btn-sm" id="actionModalConfirmBtn" onclick="confirmAction()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== REQUEST INFO MODAL ===================== -->
+<div class="modal-overlay" id="infoRequestModal">
+  <div class="modal" style="width:500px;">
+    <div class="modal-title">Request Additional Information</div>
+    <div class="modal-subtitle" id="infoRequestModalSub">This message will be sent to the applicant. Their application will be paused until they resubmit.</div>
+    <label class="form-label" style="margin-top:8px;">Message to Applicant <span style="color:var(--red);font-weight:600;">*</span></label>
+    <textarea class="notes-area full-width" id="infoRequestMessage" placeholder="e.g. Please resubmit your proof of address — the utility bill you uploaded is more than 3 months old…" style="min-height:110px;"></textarea>
+    <div style="font-size:11.5px;color:var(--text-secondary);margin-top:6px;">The applicant will see this message in their portal and can resubmit documents accordingly.</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" onclick="closeInfoRequestModal()">Cancel</button>
+      <button class="btn btn-sm" style="background:#6d28d9;color:#fff;" onclick="confirmInfoRequest()">Send Request</button>
     </div>
   </div>
 </div>
@@ -1688,6 +1709,7 @@ const ROLE_NAV = {
     { label:'Txn Queue',      view:'txn-queue'      },
     { label:'Support Queue',  view:'support-queue'  },
     { label:'Accounts',       view:'consumers'      },
+    { label:'Top-up',         view:'topup-station',  maxLevel:1 },
     { label:'Reconciliation', view:'reconciliation' },
     { label:'Escalations',    view:'escalations'    },
     { label:'Audit Log',      view:'audit',          minLevel:2 },
@@ -1717,13 +1739,16 @@ const NAV_SUBMENUS = {
 // DATA
 // ======================================================
 const APPS = [
-  { id:'APP-2841', name:'Marcus Johnson',  type:'Personal', submitted:'12 Jun', status:'under_review', risk:28,  email:'marcus.j@email.com', dob:'14 Mar 1988', nationality:'British',    phone:'+44 7700 900111', address:'22 King St, London, E1 4AB' },
-  { id:'APP-2842', name:"Sarah O'Brien",   type:'Business', submitted:'11 Jun', status:'pending',      risk:45,  email:'sarah@obriencorp.ie', dob:'02 Sep 1981', nationality:'Irish',      phone:'+353 87 234 5678', address:'15 Cork Rd, Dublin 2' },
-  { id:'APP-2843', name:'Emma Wilson',     type:'Business', submitted:'11 Jun', status:'pending',      risk:62,  email:'emma@wilsontrade.co.uk', dob:'28 Jul 1975', nationality:'British', phone:'+44 7700 900222', address:'7 Park Ave, Manchester, M1 2CD' },
-  { id:'APP-2844', name:'Lisa Park',       type:'Personal', submitted:'10 Jun', status:'flagged',      risk:78,  email:'l.park@gmail.com',  dob:'19 Nov 1990', nationality:'Korean/British', phone:'+44 7700 900333', address:'3 Rose Ln, Edinburgh, EH1 1AA' },
-  { id:'APP-2845', name:'David Kim',       type:'Personal', submitted:'10 Jun', status:'approved',     risk:22,  email:'d.kim@email.com',   dob:'06 Apr 1985', nationality:'British',    phone:'+44 7700 900444', address:'99 Oak Dr, Birmingham, B1 3EF' },
-  { id:'APP-2846', name:'Wei Zhang',       type:'Personal', submitted:'09 Jun', status:'rejected',     risk:85,  email:'wzhang@gmail.com',  dob:'22 Jan 1992', nationality:'Chinese',    phone:'+44 7700 900555', address:'14 High St, Bristol, BS1 2GH' },
-  { id:'APP-2847', name:'Priya Sharma',    type:'Personal', submitted:'12 Jun', status:'pending',      risk:31,  email:'p.sharma@email.co.uk', dob:'30 Jun 1995', nationality:'British', phone:'+44 7700 900666', address:'45 Elm Rd, Leeds, LS1 4IJ' },
+  { id:'APP-2841', name:'Marcus Johnson',  type:'Personal', submitted:'12 Jun', status:'under_review',   risk:28,  email:'marcus.j@email.com',      dob:'14 Mar 1988', nationality:'British',       phone:'+44 7700 900111', address:'22 King St, London, E1 4AB' },
+  { id:'APP-2842', name:"Sarah O'Brien",   type:'Business', submitted:'11 Jun', status:'action_required',risk:45,  email:'sarah@obriencorp.ie',     dob:'02 Sep 1981', nationality:'Irish',         phone:'+353 87 234 5678', address:'15 Cork Rd, Dublin 2',
+    complianceMessage:"Please resubmit your proof of address — the utility bill you uploaded is more than 3 months old. We need a document dated within the last 3 months.", complianceMessageBy:'Priya Nair', complianceMessageTs:'14 Jun 2025 11:20' },
+  { id:'APP-2843', name:'Emma Wilson',     type:'Business', submitted:'11 Jun', status:'pending',         risk:62,  email:'emma@wilsontrade.co.uk',  dob:'28 Jul 1975', nationality:'British',       phone:'+44 7700 900222', address:'7 Park Ave, Manchester, M1 2CD' },
+  { id:'APP-2844', name:'Lisa Park',       type:'Personal', submitted:'10 Jun', status:'flagged',         risk:78,  email:'l.park@gmail.com',        dob:'19 Nov 1990', nationality:'Korean/British', phone:'+44 7700 900333', address:'3 Rose Ln, Edinburgh, EH1 1AA' },
+  { id:'APP-2845', name:'David Kim',       type:'Personal', submitted:'10 Jun', status:'approved',        risk:22,  email:'d.kim@email.com',         dob:'06 Apr 1985', nationality:'British',       phone:'+44 7700 900444', address:'99 Oak Dr, Birmingham, B1 3EF' },
+  { id:'APP-2846', name:'Wei Zhang',       type:'Personal', submitted:'09 Jun', status:'rejected',        risk:85,  email:'wzhang@gmail.com',        dob:'22 Jan 1992', nationality:'Chinese',       phone:'+44 7700 900555', address:'14 High St, Bristol, BS1 2GH' },
+  { id:'APP-2847', name:'Priya Sharma',    type:'Personal', submitted:'12 Jun', status:'resubmitted',     risk:31,  email:'p.sharma@email.co.uk',    dob:'30 Jun 1995', nationality:'British',       phone:'+44 7700 900666', address:'45 Elm Rd, Leeds, LS1 4IJ',
+    complianceMessage:"Your bank statement provided does not match the address on your application. Please upload a document that clearly shows your current address.", complianceMessageBy:'Tom Bradley', complianceMessageTs:'13 Jun 2025 09:45',
+    resubmitNote:'Updated bank statement from June 2025 uploaded — address now matches application.', resubmitTs:'14 Jun 2025 16:30' },
 ];
 APPS.forEach(a => a.forwarded = false);
 
@@ -2112,7 +2137,10 @@ function renderSidebar() {
   // Nav items
   const navEl = document.getElementById('sidebarNav');
   const userLevel = user ? user.level : 0;
-  const items = (ROLE_NAV[role] || []).filter(item => !item.minLevel || userLevel >= item.minLevel);
+  const items = (ROLE_NAV[role] || []).filter(item =>
+    (!item.minLevel || userLevel >= item.minLevel) &&
+    (!item.maxLevel || userLevel <= item.maxLevel)
+  );
   navEl.innerHTML = `<div class="nav-section-label">Navigation</div>` +
     items.map((item, i) => {
       if (item.subItems) {
@@ -2213,8 +2241,9 @@ function showView(viewId, navEl) {
     'system-health':'System Health',
     'sar-filing':    'SAR Filing',
     'alerts':        'Alert Queue',
-    'support-queue': 'Support Queue',
-    'escalations':   currentUser && currentUser.level > 1 ? 'Escalation Inbox' : 'My Escalations',
+    'support-queue':   'Support Queue',
+    'topup-station':   'Top-up Station',
+    'escalations':     currentUser && currentUser.level > 1 ? 'Escalation Inbox' : 'My Escalations',
   };
   document.getElementById('topBarTitle').textContent = titles[viewId] || viewId;
 
@@ -2230,8 +2259,9 @@ function showView(viewId, navEl) {
   if (viewId==='audit')         renderAudit();
   if (viewId==='sar-filing')    renderSARFiling();
   if (viewId==='alerts')        renderAlerts();
-  if (viewId==='support-queue') renderSupportQueue();
-  if (viewId==='escalations')  renderEscalations();
+  if (viewId==='support-queue')  renderSupportQueue();
+  if (viewId==='topup-station')  renderTopupStation();
+  if (viewId==='escalations')    renderEscalations();
 }
 
 // ======================================================
@@ -2464,6 +2494,8 @@ function statusBadge(s) {
     approved:'<span class="badge badge-green">Approved</span>',
     rejected:'<span class="badge badge-gray">Rejected</span>',
     flagged:'<span class="badge badge-red">Flagged</span>',
+    action_required:'<span class="badge badge-orange">Action Required</span>',
+    resubmitted:'<span class="badge badge-purple">Resubmitted</span>',
     Verified:'<span class="badge badge-green">Verified</span>',
     Pending:'<span class="badge badge-amber">Pending</span>',
     Flagged:'<span class="badge badge-red">Flagged</span>',
@@ -2499,10 +2531,15 @@ function renderOnboarding(apps) {
       actionBtn = `<button class="btn btn-ghost btn-sm" disabled style="opacity:0.65;cursor:default;background:#f0f4ff;color:var(--blue);border-color:var(--blue);">With L2 Officer</button>`;
     } else if (a.status === 'approved' || a.status === 'rejected') {
       actionBtn = `<button class="btn btn-ghost btn-sm" onclick="openDrawerForApp(${APPS.indexOf(a)})">View</button>`;
+    } else if (a.status === 'action_required') {
+      actionBtn = `<button class="btn btn-outline btn-sm" onclick="openDrawerForApp(${APPS.indexOf(a)})" style="border-color:#9a3412;color:#9a3412;">View Request</button>`;
+    } else if (a.status === 'resubmitted') {
+      actionBtn = `<button class="btn btn-primary btn-sm" onclick="openDrawerForApp(${APPS.indexOf(a)})">Re-review</button>`;
     } else {
       actionBtn = `<button class="btn btn-outline btn-sm" onclick="openDrawerForApp(${APPS.indexOf(a)})">Review</button>`;
     }
-    return `<tr>
+    const rowStyle = a.status === 'resubmitted' ? ' style="background:#faf5ff;"' : a.status === 'action_required' ? ' style="background:#fff7ed;"' : '';
+    return `<tr${rowStyle}>
       <td><span class="ref-code">${a.id}</span></td>
       <td style="font-weight:500;">${a.name}</td>
       <td>${a.type}</td>
@@ -2528,10 +2565,12 @@ function applyOnboardingFilter() {
   let filtered = APPS.filter(a =>
     a.name.toLowerCase().includes(q) || a.id.toLowerCase().includes(q)
   );
-  if (onboardingTabFilter === 'pending')      filtered = filtered.filter(a => a.status === 'pending');
-  if (onboardingTabFilter === 'under_review') filtered = filtered.filter(a => a.status === 'under_review');
-  if (onboardingTabFilter === 'flagged')      filtered = filtered.filter(a => a.status === 'flagged');
-  if (onboardingTabFilter === 'high_risk')    filtered = filtered.filter(a => a.risk >= 70);
+  if (onboardingTabFilter === 'pending')         filtered = filtered.filter(a => a.status === 'pending');
+  if (onboardingTabFilter === 'under_review')    filtered = filtered.filter(a => a.status === 'under_review');
+  if (onboardingTabFilter === 'flagged')         filtered = filtered.filter(a => a.status === 'flagged');
+  if (onboardingTabFilter === 'action_required') filtered = filtered.filter(a => a.status === 'action_required');
+  if (onboardingTabFilter === 'resubmitted')     filtered = filtered.filter(a => a.status === 'resubmitted');
+  if (onboardingTabFilter === 'decided')         filtered = filtered.filter(a => a.status === 'approved' || a.status === 'rejected');
   const subtitle = document.getElementById('onboardingSubtitle');
   if (subtitle) subtitle.textContent = filtered.length + ' application' + (filtered.length!==1?'s':'') + (onboardingTabFilter!=='all'?' — filtered':'');
   renderOnboarding(filtered);
@@ -2557,15 +2596,26 @@ function openDrawerForApp(idx) {
 function updateDrawerActions(app) {
   const isTerminal = app.status === 'approved' || app.status === 'rejected';
   if (isTerminal) { return; }
+
+  // Waiting for customer — action_required, read-only for admin
+  if (app.status === 'action_required') {
+    document.getElementById('drawerActionBtns').innerHTML =
+      `<span style="font-size:12px;color:#9a3412;background:#ffedd5;border:1px solid #fed7aa;padding:5px 12px;border-radius:6px;font-weight:600;">⏳ Awaiting Customer Response</span>
+       <button class="btn btn-ghost btn-sm" onclick="openInfoRequestModal()">Edit Request</button>
+       <button class="btn btn-ghost btn-sm" style="font-size:11px;color:var(--text-secondary);" onclick="simulateCustomerResubmit(${APPS.indexOf(app)})">⚙ Simulate Resubmit</button>`;
+    return;
+  }
+
   const isHighRisk = app.risk >= 70;
   const isMedRisk  = app.risk >= 40;
   const riskLabel  = isHighRisk ? 'High Risk' : isMedRisk ? 'Med Risk' : 'Low Risk';
+  const requestInfoBtn = `<button class="btn btn-outline btn-sm" onclick="openInfoRequestModal()" style="border-color:#6d28d9;color:#6d28d9;">Request Info</button>`;
 
-  // L1 compliance: flag and escalate only — no approve/reject authority
+  // L1 compliance: flag, request info, escalate only
   if (currentRole === 'compliance' && currentUser && currentUser.level === 1) {
     const escBtn = voluntaryForwardBtn('Escalate to L2', `approve_${isHighRisk?'high':isMedRisk?'medium':'low'}_risk`, `Approve Application (${riskLabel})`, app.id, app.name);
     document.getElementById('drawerActionBtns').innerHTML =
-      `<button class="btn btn-amber btn-sm" onclick="openActionModal('flag')">Flag</button> ${escBtn}`;
+      `<button class="btn btn-amber btn-sm" onclick="openActionModal('flag')">Flag</button> ${requestInfoBtn} ${escBtn}`;
     return;
   }
 
@@ -2584,7 +2634,8 @@ function updateDrawerActions(app) {
   }
   document.getElementById('drawerActionBtns').innerHTML =
     approveBtn + ' ' + rejectBtn +
-    ` <button class="btn btn-amber btn-sm" onclick="openActionModal('flag')">Flag</button>`;
+    ` <button class="btn btn-amber btn-sm" onclick="openActionModal('flag')">Flag</button>` +
+    ` ${requestInfoBtn}`;
 }
 
 function closeReviewDrawer() {
@@ -2601,6 +2652,28 @@ function buildDrawerBody(app) {
       <span class="signal-chip signal-warn">Address unverified</span>
     </div>`;
 
+  // Compliance message banner (action_required or resubmitted)
+  let compMsgBanner = '';
+  if (app.complianceMessage) {
+    compMsgBanner = `
+    <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#9a3412;margin-bottom:6px;">Message Sent to Customer</div>
+      <div style="font-size:13px;font-style:italic;color:var(--text-primary);margin-bottom:8px;">"${app.complianceMessage}"</div>
+      <div style="font-size:11px;color:var(--text-secondary);">Sent by ${app.complianceMessageBy} · ${app.complianceMessageTs}</div>
+    </div>`;
+  }
+
+  // Resubmission response panel
+  let resubmitPanel = '';
+  if (app.status === 'resubmitted' && app.resubmitNote) {
+    resubmitPanel = `
+    <div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#6d28d9;margin-bottom:6px;">Customer Response — Resubmission</div>
+      <div style="font-size:13px;color:var(--text-primary);margin-bottom:8px;">${app.resubmitNote}</div>
+      <div style="font-size:11px;color:var(--text-secondary);">Resubmitted: ${app.resubmitTs}</div>
+    </div>`;
+  }
+
   const gaugeHtml = buildGauge(app.risk, color);
   const recoText = app.risk < 40 ? 'Proceed with standard verification. No adverse media detected.'
     : app.risk < 70 ? 'Enhanced due diligence recommended. Address verification pending.'
@@ -2615,6 +2688,7 @@ function buildDrawerBody(app) {
   const tlItems = buildTimeline(app);
 
   return `
+    ${resubmitPanel}${compMsgBanner}
     <!-- AI Risk Intelligence -->
     <div class="drawer-section" id="sec-ai">
       <div class="drawer-section-header" onclick="toggleSection('sec-ai')">
@@ -2752,11 +2826,23 @@ function buildGauge(score, color) {
 }
 
 function buildTimeline(app) {
+  const isActionReq  = app.status === 'action_required';
+  const isResubmit   = app.status === 'resubmitted';
+  const isDecided    = app.status === 'approved' || app.status === 'rejected';
   const statuses = [
     { label:'Submitted', time:app.submitted+' 2025', done:true },
     { label:'Documents Received', time:app.submitted+' 2025', done:true },
     { label:'Under Review', time:app.submitted+' 2025', done: app.status !== 'pending' },
-    { label: app.status === 'approved' ? 'Approved' : app.status === 'rejected' ? 'Rejected' : app.status === 'flagged' ? 'Flagged for Review' : 'Pending Decision', time: app.status==='pending' ? 'Awaiting…' : '15 Jun 2025', done: app.status!=='pending', isCurrent: true, color: app.status==='approved' ? 'done' : app.status==='rejected' ? 'rejected' : app.status==='flagged' ? 'current' : '' },
+    ...(isActionReq || isResubmit ? [
+      { label:'Additional Info Requested', time: app.complianceMessageTs||'—', done:true, color:'current' },
+    ] : []),
+    ...(isResubmit ? [
+      { label:'Customer Resubmitted', time: app.resubmitTs||'—', done:true, color:'done' },
+      { label:'Under Re-review', time:'Now', done:true, color:'current' },
+    ] : []),
+    ...(!isActionReq && !isResubmit ? [
+      { label: isDecided ? (app.status==='approved'?'Approved':'Rejected') : app.status==='flagged' ? 'Flagged for Review' : 'Pending Decision', time: app.status==='pending' ? 'Awaiting…' : '15 Jun 2025', done: app.status!=='pending', color: app.status==='approved'?'done':app.status==='rejected'?'rejected':app.status==='flagged'?'current':'' },
+    ] : []),
   ];
   return statuses.map((s,i) => `
     <div class="timeline-item">
@@ -3188,6 +3274,47 @@ function openActionModal(action) {
 }
 
 function closeActionModal() { document.getElementById('actionModal').classList.remove('open'); }
+
+function openInfoRequestModal() {
+  const app = APPS[currentAppIdx];
+  if (!app) return;
+  document.getElementById('infoRequestModalSub').textContent = `Sending to: ${app.name} (${app.id}) — application will be paused until they respond.`;
+  document.getElementById('infoRequestMessage').value = app.complianceMessage || '';
+  document.getElementById('infoRequestModal').classList.add('open');
+}
+
+function closeInfoRequestModal() { document.getElementById('infoRequestModal').classList.remove('open'); }
+
+function confirmInfoRequest() {
+  const msg = document.getElementById('infoRequestMessage').value.trim();
+  if (!msg) { showToast('Please enter a message for the applicant.', 'warning'); return; }
+  const app = APPS[currentAppIdx];
+  if (!app) return;
+  app.status = 'action_required';
+  app.complianceMessage = msg;
+  app.complianceMessageBy = currentUser.name;
+  app.complianceMessageTs = fmtNow();
+  app.forwarded = false;
+  closeInfoRequestModal();
+  closeReviewDrawer();
+  applyOnboardingFilter();
+  AUDIT_ENTRIES.unshift({ ts:fmtNow(), admin:currentUser.name, action:'info_request', target:app.id+' '+app.name, ip:currentUser.ip, detail:`Additional info requested: "${msg.substring(0,80)}${msg.length>80?'…':''}"` });
+  renderAudit();
+  showToast(`Info request sent to ${app.name}. Application paused.`, 'warning');
+}
+
+function simulateCustomerResubmit(idx) {
+  const app = APPS[idx];
+  if (!app || app.status !== 'action_required') return;
+  const note = prompt('Simulate customer resubmission — enter customer response note:', 'Updated document uploaded as requested.');
+  if (!note) return;
+  app.status = 'resubmitted';
+  app.resubmitNote = note;
+  app.resubmitTs = fmtNow();
+  closeReviewDrawer();
+  applyOnboardingFilter();
+  showToast(`Simulated: ${app.name} has resubmitted. App moved to Resubmitted tab.`, 'success');
+}
 
 function confirmAction() {
   const app = APPS[currentAppIdx];
@@ -3906,6 +4033,150 @@ function resolveTicket(id) {
 }
 function escalateTicket(id) {
   showToast(`Ticket ${id} escalated to senior operations.`,'warning');
+}
+
+// ======================================================
+// OPS: TOP-UP STATION
+// ======================================================
+const TOPUP_HISTORY = [];
+
+function renderTopupStation() {
+  const histRows = TOPUP_HISTORY.length
+    ? TOPUP_HISTORY.map(h => `<tr>
+        <td style="font-family:'Consolas',monospace;font-size:12px;">${h.ts}</td>
+        <td style="font-weight:500;">${h.name}</td>
+        <td style="font-family:'Consolas',monospace;font-size:12px;">${h.account}</td>
+        <td style="font-family:'Consolas',monospace;font-weight:600;color:var(--green);">£${parseFloat(h.amount).toFixed(2)}</td>
+        <td style="font-size:12px;color:var(--text-secondary);">${h.ref||'—'}</td>
+        <td>${h.status==='escalated'?'<span class="badge badge-amber">Escalated to L2</span>':'<span class="badge badge-green">Processed</span>'}</td>
+        <td style="font-size:12px;color:var(--text-secondary);max-width:180px;">${h.reason||'—'}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="7" style="text-align:center;color:var(--text-secondary);padding:24px;">No top-up requests yet this session.</td></tr>`;
+
+  document.getElementById('view-topup-station').innerHTML = `
+    <div class="view-header">
+      <div><div class="view-title">Top-up Station</div><div class="view-subtitle">Initiate account top-ups for verified customers</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:400px 1fr;gap:24px;align-items:start;">
+      <div class="card" style="padding:24px;">
+        <div style="font-size:15px;font-weight:700;margin-bottom:4px;">New Top-up Request</div>
+        <div style="font-size:12.5px;color:var(--text-secondary);margin-bottom:20px;">Enter the customer name or ID to look up their account, then specify the top-up details.</div>
+
+        <div class="form-group" style="margin-bottom:14px;">
+          <label class="form-label">Customer Name or ID</label>
+          <input type="text" class="form-input" id="tupCustomerSearch" placeholder="e.g. Alice Johnson or QBNK-001" oninput="topupLookup()" autocomplete="off">
+          <div id="tupLookupResults" style="margin-top:6px;"></div>
+        </div>
+
+        <div id="tupConsumerInfo" style="display:none;background:var(--blue-tint);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:14px;">
+          <div style="font-size:13px;font-weight:600;" id="tupConsumerName"></div>
+          <div style="font-size:12px;color:var(--text-secondary);" id="tupConsumerId"></div>
+          <div style="font-size:12px;color:var(--text-secondary);" id="tupConsumerKyc"></div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:14px;">
+          <label class="form-label">Account</label>
+          <select class="form-input" id="tupAccount">
+            <option value="">— select account —</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom:14px;">
+          <label class="form-label">Amount (£)</label>
+          <input type="number" class="form-input" id="tupAmount" placeholder="0.00" min="1" step="0.01">
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Amounts over £1,000 will be escalated to L2 for authorisation.</div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:14px;">
+          <label class="form-label">Payment Reference</label>
+          <input type="text" class="form-input" id="tupRef" placeholder="e.g. BACS-20250617-001">
+        </div>
+
+        <div class="form-group" style="margin-bottom:20px;">
+          <label class="form-label">Reason</label>
+          <input type="text" class="form-input" id="tupReason" placeholder="e.g. Customer requested manual top-up">
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;" onclick="submitTopupStation()">Submit Top-up</button>
+      </div>
+
+      <div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:12px;">Top-up History — This Session</div>
+        <div class="table-wrap">
+          <table><thead><tr>
+            <th>Time</th><th>Customer</th><th>Account</th><th>Amount</th><th>Reference</th><th>Status</th><th>Reason</th>
+          </tr></thead><tbody>${histRows}</tbody></table>
+        </div>
+      </div>
+    </div>`;
+}
+
+let _tupSelectedConsumer = null;
+
+function topupLookup() {
+  const q = (document.getElementById('tupCustomerSearch').value || '').trim().toLowerCase();
+  const resultsEl = document.getElementById('tupLookupResults');
+  const infoEl = document.getElementById('tupConsumerInfo');
+  if (q.length < 2) { resultsEl.innerHTML = ''; infoEl.style.display = 'none'; _tupSelectedConsumer = null; return; }
+  const matches = CONSUMERS.filter(c => c.kyc === 'Verified' && (c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q)));
+  if (!matches.length) {
+    resultsEl.innerHTML = `<div style="font-size:12px;color:var(--text-secondary);padding:6px 0;">No verified customers found.</div>`;
+    infoEl.style.display = 'none'; _tupSelectedConsumer = null; return;
+  }
+  resultsEl.innerHTML = `<div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;background:#fff;">` +
+    matches.slice(0,5).map(c => `<div style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);" onmouseenter="this.style.background='var(--blue-tint)'" onmouseleave="this.style.background='#fff'" onclick="selectTopupConsumer('${c.id}')"><strong>${c.name}</strong> <span style="color:var(--text-secondary);font-size:11px;">${c.id} · ${c.accounts.join(', ')}</span></div>`).join('') +
+    `</div>`;
+}
+
+function selectTopupConsumer(id) {
+  const c = CONSUMERS.find(x => x.id === id);
+  if (!c) return;
+  _tupSelectedConsumer = c;
+  document.getElementById('tupCustomerSearch').value = c.name;
+  document.getElementById('tupLookupResults').innerHTML = '';
+  document.getElementById('tupConsumerName').textContent = c.name;
+  document.getElementById('tupConsumerId').textContent = c.id + ' · ' + c.type;
+  document.getElementById('tupConsumerKyc').textContent = 'KYC: ' + c.kyc;
+  document.getElementById('tupConsumerInfo').style.display = '';
+  const sel = document.getElementById('tupAccount');
+  sel.innerHTML = c.accounts.map(a => `<option value="${a}">${a} Account</option>`).join('');
+}
+
+function submitTopupStation() {
+  if (!_tupSelectedConsumer) { showToast('Please select a customer first.','warning'); return; }
+  const account = document.getElementById('tupAccount').value;
+  const amount = parseFloat(document.getElementById('tupAmount').value);
+  const ref = document.getElementById('tupRef').value.trim();
+  const reason = document.getElementById('tupReason').value.trim();
+  if (!account) { showToast('Please select an account.','warning'); return; }
+  if (!amount || amount <= 0) { showToast('Please enter a valid amount.','warning'); return; }
+  if (!reason) { showToast('Please enter a reason for the top-up.','warning'); return; }
+
+  const c = _tupSelectedConsumer;
+  const isLarge = amount > 1000;
+  const action = isLarge ? 'topup_large' : 'topup_small';
+  const actionLabel = `Top-up £${amount.toFixed(2)}${isLarge?' (Large)':''}`;
+
+  if (!can(action)) {
+    const d = encodeURIComponent(JSON.stringify({action, actionLabel:`${actionLabel} for ${c.name} (${account})`, target:c.id, targetName:c.name, reason: isLarge ? `Top-ups over £1,000 require Senior Operations Agent (L2) authorisation` : `Admin top-ups require Senior Operations Agent (L2) clearance`}));
+    TOPUP_HISTORY.unshift({ ts:fmtNow(), name:c.name, account, amount, ref, reason, status:'escalated' });
+    openEscalationModal(d);
+    renderTopupStation();
+    return;
+  }
+
+  TOPUP_HISTORY.unshift({ ts:fmtNow(), name:c.name, account, amount, ref, reason, status:'processed' });
+  AUDIT_ENTRIES.unshift({ ts:fmtNow(), admin:currentUser.name, action:'topup', target:c.id+' '+c.name, ip:currentUser.ip, detail:`£${amount.toFixed(2)} top-up to ${account} — ${reason}` });
+  renderAudit();
+  showToast(`Top-up of £${amount.toFixed(2)} submitted for ${c.name} (${account}).`, 'success');
+  document.getElementById('tupCustomerSearch').value = '';
+  document.getElementById('tupAmount').value = '';
+  document.getElementById('tupRef').value = '';
+  document.getElementById('tupReason').value = '';
+  document.getElementById('tupConsumerInfo').style.display = 'none';
+  document.getElementById('tupAccount').innerHTML = '<option value="">— select account —</option>';
+  _tupSelectedConsumer = null;
+  renderTopupStation();
 }
 
 // ======================================================
